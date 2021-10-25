@@ -117,8 +117,7 @@ log(){
   #echo "[$(date +'%Y-%m-%d %H:%M:%S')] $1" | tee -a $logfile
   # Fri May 28 15:49:06 2021 [authpass] OpenVPN authentication successfull: username
   # Wed Jun  2 17:13:16 2021 [authpass] OpenVPN authentication successfull: username
-  #echo "$(date +"%a %b %d %T %Y" | xargs printf "%s %s %2.f %s %4d\n") [$fname] $1" | tee -a $logfile
-  echo "$(date +"%Y-%m-%d %T") [$fname] $1" | tee -a $logfile
+  echo "$(date +"%a %b %d %T %Y" | xargs printf "%s %s %2.f %s %4d\n") [$fname] $1" | tee -a $logfile
 }
 
 md5(){
@@ -235,7 +234,7 @@ uci commit openvpn
 # Add vpn interface
 uci set network.ovpn_server=interface
 uci set network.ovpn_server.proto='none'
-uci set network.ovpn_server.device="tun$i"
+uci set network.ovpn_server.ifname="tun$i"
 uci set network.ovpn_server.auto='1'
 uci commit network
 
@@ -394,7 +393,7 @@ EOF
   # Add vpn interface
   uci set network.ovpn_server_s2s=interface
   uci set network.ovpn_server_s2s.proto='none'
-  uci set network.ovpn_server_s2s.device="tun$i"
+  uci set network.ovpn_server_s2s.ifname="tun$i"
   uci set network.ovpn_server_s2s.auto='1'
   uci commit network
 
@@ -428,7 +427,7 @@ if [ -n "$(cat ./opkg-install.env | grep "^VPN_SITE=")" ] && [ $BRIDGED_AP -eq 0
 
   echo "* Set OpenVPN Client Site config"
 
-  # VPN_SITE="https://ejw.root.sx/openvpn/jdwt.root.sx.ovpn|username|password"
+  # VPN_SITE="https://ejw.root.sx/openvpn/jdwt.root.sx@ejw.root.sx.ovpn|username|password"
   for L in $(cat ./opkg-install.env | grep "^VPN_SITE="); do
     # Get the value after =
     V=${L#*=}
@@ -544,8 +543,7 @@ cat << 'EOF' > /etc/openvpn/dnsmasq-update
 function fLog() {
   # Fri May 28 15:49:06 2021 [dnsmasq-update] Start up
   # Wed Jun  2 17:13:16 2021 [dnsmasq-update] Start up
-  #echo "$(date +"%a %b %d %T %Y" | xargs printf "%s %s %2.f %s %4d\n") [$fname] $1"
-  echo "$(date +"%Y-%m-%d %T") [$fname] $1"
+  echo "$(date +"%a %b %d %T %Y" | xargs printf "%s %s %2.f %s %4d\n") [$fname] $1"
 }
 
 fname=$(basename $0)

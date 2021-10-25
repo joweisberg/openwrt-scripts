@@ -993,13 +993,8 @@ uci set network.wan.metric='10'
 uci commit network
 
 echo "* UCI config Guest network"
-uci -q del network.guest_dev
-uci set network.guest_dev=device
-uci set network.guest_dev.type=bridge
-uci set network.guest_dev.name=br-guest
-uci -q del network.guest
 uci set network.guest=interface
-uci set network.guest.device='br-guest'
+uci set network.guest.ifname='wlan1-1'
 uci set network.guest.proto='static'
 uci set network.guest.ipaddr="$NETADDR_GUEST.1"
 uci set network.guest.netmask='255.255.255.0'
@@ -1038,7 +1033,7 @@ fi
 uci commit dhcp
 
 echo "* UCI config firewall"
-uci set firewall.@defaults[0].synflood_protect='1'
+uci set firewall.@defaults[0].syn_flood='1'
 uci set firewall.@defaults[0].drop_invalid='1'
 uci set firewall.@defaults[0].input='DROP'
 uci set firewall.@defaults[0].output='ACCEPT'
@@ -1351,7 +1346,7 @@ uci commit hd-idle
 if [ $UWAN -eq 1 ]; then
   echo "* UCI config network uwan"
   uci set network.uwan=interface
-  uci set network.uwan.device='eth2'
+  uci set network.uwan.ifname='eth2'
   uci set network.uwan.proto='dhcp'
   uci commit network
 
@@ -1383,7 +1378,7 @@ fi
 if [ $WPA3 -eq 1 ]; then
   echo "* Package WPA2/WPA3 Personal (PSK/SAE) mixed mode"
   opkg remove --autoremove wpad-basic > /dev/null 2>&1
-  fCmd opkg install wpad-basic-wolfssl
+  fCmd opkg install wpad-openssl
   echo "* UCI config WPA2/WPA3 (PSK/SAE)"
   # Fix iOS 13.1.3 connected: option auth_cache '1'
   uci set wireless.default_radio0.auth_cache='1'
@@ -1510,11 +1505,11 @@ if [ $SQM -eq 1 ]; then
   echo "* UCI config SQM QoS"
   uci set sqm.eth1.enabled='1'
   if [ $UWAN -eq 1 ]; then
-    uci set sqm.eth1.interface="$(uci get network.uwan.device)"
+    uci set sqm.eth1.interface="$(uci get network.uwan.ifname)"
   elif [ $WWAN -eq 1 ]; then
     uci set sqm.eth1.interface="wwan0"
   else
-    uci set sqm.eth1.interface="$(uci get network.wan.device)"
+    uci set sqm.eth1.interface="$(uci get network.wan.ifname)"
   fi
   #
   # https://forum.openwrt.org/t/qos-advices-smart-tv/57168
@@ -1582,7 +1577,7 @@ if [ $STATS -eq 1 ]; then
 fi
 
 echo "* Package for ACME script"
-fCmd opkg install curl ca-bundle
+fCmd opkg install luci-ssl-openssl curl ca-bundle
 echo "* Install ACME script"
 curl -sS https://raw.githubusercontent.com/Neilpang/acme.sh/master/acme.sh > /etc/acme/acme.sh
 chmod a+x /etc/acme/acme.sh

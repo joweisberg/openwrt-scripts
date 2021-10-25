@@ -75,7 +75,7 @@ echo "* UCI config network/interface for IKEv2/IPsec VPN server"
 # Add vpn interface
 uci set network.ipsec_server=interface
 uci set network.ipsec_server.proto='none'
-uci set network.ipsec_server.device='ipsec0'
+uci set network.ipsec_server.ifname='ipsec0'
 uci set network.ipsec_server.auto='1'
 uci commit network
 

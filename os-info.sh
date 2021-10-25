@@ -156,8 +156,8 @@ echo "$(echored " Users account: ")$(cat /etc/passwd | wc -l) / $OS_USER_MAX $(f
 echo "$(echored " Users shell: ")$(cat /etc/passwd | grep "$(cat /etc/shells)" | wc -l) / $OS_SHELL_MAX $(fShowStatus $(cat /etc/passwd | grep "$(cat /etc/shells)" | wc -l) $OS_SHELL_MAX)"
 echo "$(echored " Users logged in: ")$(ls /dev/pts/* | grep -v "/dev/pts/ptmx" | wc -l)"
 echo "$(echored " IPsec logged in: ")$(ipsec leases | sed 1d | grep online | wc -l)"
-OPVPN_UP=$(cat /var/log/openvpn.log 2> /dev/null | grep "$(date +'%Y-%m-%d')" | grep 'client/' | grep 'IPv4=' | wc -l)
-OPVPN_DN=$(cat /var/log/openvpn.log 2> /dev/null | grep "$(date +'%Y-%m-%d')" | grep 'client/' | grep SIGTERM | wc -l)
+OPVPN_UP=$(cat /var/log/openvpn.log 2> /dev/null | grep "$(date +"%a %b %e")" | grep "$(date +"%Y")" | grep 'client/' | grep 'IPv4=' | wc -l)
+OPVPN_DN=$(cat /var/log/openvpn.log 2> /dev/null | grep "$(date +"%a %b %e")" | grep "$(date +"%Y")" | grep 'client/' | grep SIGTERM | wc -l)
 echo "$(echored " OpenVPN logged in: ")$(expr $OPVPN_UP - $OPVPN_DN)"
 
 echo
@@ -179,15 +179,14 @@ echo "$(echored " IPv4 network: ")$ETH_ADR $ETH_DNS [$ETH_DEV]"
 echo "$(echored " IPv4 outside: ")$ETH_GTW [$(uci get ddns.myddns_ipv4.lookup_host)]"
 echo "$(echored " Devices connected: ")"
 # Get all mac address from dhcp leases
-interface="br-lan"
-cat /tmp/dhcp.leases | awk '{print toupper($2)}' | sed "s/^/$interface /g"  > /tmp/mac-lan.list
+cat /tmp/dhcp.leases | awk '{print toupper($2)}' > /tmp/mac-lan.list
 # for each interface, count wireless devices
 rm -f /tmp/mac-wlan.list
 wifidevice=0
 for interface in $(iwinfo | awk '/ESSID/{print $1}'); do
   wifidevice=$(( $wifidevice + $(iwinfo $interface assoclist | grep dBm | wc -l) ))
   # Add mac address from wlan devices
-  iwinfo $interface assoclist | awk '/dBm/{print toupper($1)}' | sed "s/^/$interface /g" >> /tmp/mac-wlan.list
+  iwinfo $interface assoclist | awk '/dBm/{print toupper($1)}' >> /tmp/mac-wlan.list
 done
 # Remove from dhcp leases mac address from wlan devices
 for mac in $(cat /tmp/mac-wlan.list); do
@@ -211,10 +210,9 @@ done
 echo
 echo "NETWORK DEVICES"
 printf ' %-7s %-9s %-17s %-15s %s [%s]\n' "# Int." "[Exp.]" "MAC address" "IP address" "Name" "Vendor"
-# Get connected devices on lan and wireless network with expired dhpc leases
-for L in $(cat /tmp/mac-lan.list /tmp/mac-wlan.list); do
-  interface="$(echo $L | awk '{print $1}')"
-  mac="$(echo $L | awk '{print $2}')"
+# Get connected devices on lan network with expired dhpc leases
+for mac in $(cat /tmp/mac-lan.list); do
+  interface="br-lan"
   # Leasetime remaining => [06h 57m]
   leasetime="[$(date -d @$(($(cat /tmp/dhcp.leases | grep -i "$mac" | awk '{print $1}') - $(date +"%s"))) +"%Hh %Mm")]"
   # Find ip in dhpc dynamic leases
@@ -246,6 +244,47 @@ for L in $(cat /tmp/mac-lan.list /tmp/mac-wlan.list); do
 
   # br-lan [08h 53m] 70:fc:8f:73:b7:90 192.168.10.254 fbx-player [FREEBOX SAS]
   printf ' %-7s %-9s %-17s %-15s %s [%s]\n' "$interface" "$leasetime" "$mac" "$ip" "$host" "$vendor" | sed "s/[!!]/$(echoyellow "!!")/g"
+done
+# Get connected devices on wireless with expired dhpc leases
+for interface in $(iwinfo | awk '/ESSID/{print $1}'); do
+  type=$(iwinfo $interface info | awk '/Type/{print $5}')
+  channel=$(iwinfo $interface info | awk '/Master  Channel/{print $4}')
+  essid=$(iwinfo $interface info | awk -F'"' '/ESSID/{print $2}')
+
+  # for each interface, get mac addresses of connected stations/clients
+  for mac in $(iwinfo $interface assoclist | grep dBm | cut -d' ' -f1); do
+    # Leasetime remaining => [06h 57m]
+    leasetime="[$(date -d @$(($(cat /tmp/dhcp.leases | grep -i "$mac" | awk '{print $1}') - $(date +"%s"))) +"%Hh %Mm")]"
+    # Find ip in dhpc dynamic leases
+    ip=$(cat /tmp/dhcp.leases | grep -i $mac | cut -d' ' -f3)
+    # Find ip in dhpc static lease
+    if [ -z "$ip" ]; then
+      # dhcp.@host[2].mac='DE:0D:17:C0:51:9F'
+      dhcpmac=$(uci show dhcp | grep -i ".mac='$mac'" | cut -d'=' -f1)
+      # dhcp.@host[2].mac
+      # uci get dhcp.@host[2].ip
+      ip="$(uci -q get ${dhcpmac%.*}.ip)"
+    fi
+    if [ -z "$ip" ]; then
+      ip="UKWN"
+    fi
+    host=$(cat /tmp/dhcp.leases | cut -d' ' -f 2,3,4 | grep -i $mac | cut -d' ' -f3)
+    # Find host name in dhpc static lease
+    if [ -z "$host" ]; then
+      # dhcp.@host[2].mac='DE:0D:17:C0:51:9F'
+      dhcpmac=$(uci show dhcp | grep -i ".mac='$mac'" | cut -d'=' -f1)
+      # dhcp.@host[2].mac
+      # uci get dhcp.@host[2].name
+      host="$(uci -q get ${dhcpmac%.*}.name)"
+    fi
+    if [ -z "$host" ]; then
+      host="*"
+    fi
+    vendor=$(sleep 1 && curl --silent https://api.maclookup.app/v2/macs/$mac | cut -d',' -f4 | cut -d'"' -f4)
+
+    # br-lan [08h 53m] 70:fc:8f:73:b7:90 192.168.10.254 fbx-player [FREEBOX SAS]
+    printf ' %-7s %-9s %-17s %-15s %s [%s]\n' "$interface" "$leasetime" "$mac" "$ip" "$host" "$vendor" | sed "s/!!/$(echoyellow "!!")/g"
+  done
 done
 
 if [ $(ipsec leases | sed 1d | grep online | wc -l) -gt 0 ]; then
@@ -285,11 +324,11 @@ if [ $(expr $OPVPN_UP - $OPVPN_DN) -gt 0 ]; then
   #      client/92.184.116.249:46047 SIGTERM[soft,remote-exit]
   #      client/92.184.107.82:49333 SIGTERM[soft,remote-exit]
   #      92.184.116.249:46047 TLS: Username/Password authentication succeeded for username 'Jonathan'
-  cat /var/log/openvpn.log | grep 'client/' | grep 'IPv4=' | awk '{print "    "$3" "$7}' | sed 's/,$//g' 2> /dev/null > /tmp/openvpn-users.log
+  cat /var/log/openvpn.log | grep 'client/' | grep 'IPv4=' | awk '{print "    "$4" "$6" "$10}' | sed 's/,$//g' 2> /dev/null > /tmp/openvpn-users.log
   # Add username
   #      client/92.184.116.249:46047 IPv4=10.10.1.2 'Jonathan'
-  cat /var/log/openvpn.log | grep 'Username/Password authentication succeeded' | while read line; do ip=$(echo "$line" | awk '{print $3}'); login=$(echo "$line" | awk -F"'" '{print $2}'); sed -i "/$ip/ s/$/ \t'$login'/" /tmp/openvpn-users.log; done
-  echo "$(cat /var/log/openvpn.log | grep 'client/' | grep SIGTERM | awk '{print $3}' | awk -F'/' '{print $2}')" | while read line; do [ -n "$line" ] && sed -i "/$line/d" /tmp/openvpn-users.log; done
+  cat /var/log/openvpn.log | grep 'Username/Password authentication succeeded' | while read line; do ip=$(echo "$line" | awk '{print $6}'); login=$(echo "$line" | awk -F"'" '{print $2}'); sed -i "/$ip/ s/$/ \t'$login'/" /tmp/openvpn-users.log; done
+  echo "$(cat /var/log/openvpn.log | grep 'client/' | grep SIGTERM | awk '{print $6}' | awk -F'/' '{print $2}')" | while read line; do [ -n "$line" ] && sed -i "/$line/d" /tmp/openvpn-users.log; done
   cat /tmp/openvpn-users.log
   rm -f /tmp/openvpn-users.log
 fi
