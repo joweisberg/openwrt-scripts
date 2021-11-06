@@ -207,7 +207,7 @@ cp: can't stat 'acme.sh': No such file or directory
 *
 *
 * Get ACME certificates command line to run, if necessary!
-/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh \'Allow-NAS-http\' off && /root/fw-redirect.sh \'Allow-http\' on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh \'Allow-http\' off && /root/fw-redirect.sh \'Allow-NAS-http\' on && /usr/sbin/ipsec restart
+/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh /root/fw-redirect.sh \'Allow-http\' on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh \'Allow-http\' off && /usr/sbin/ipsec restart
 *
 *
 *
