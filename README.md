@@ -1,5 +1,60 @@
 # openwrt-scripts
- OpenWrt scripts for USB-3.0, UWAN, WWAN, WPA3, SFTP, SMB, NFS, DDNS, SQM QoS, Collectd/Stats, Acme, uHTTPd, OpenVPN, strongswan/IKEv2, adblock, crontab, watchcat, mSMTP
+ OpenWrt scripts for USB-3.0, WPA3, SFTP, SMB, NFS, DDNS, SQM QoS, Acme, OpenVPN, IKEv2/IPsec, adblock, watchcat, mSMTP
+
+## Functionalities
+- Create a generic script to install OpenWrt automatically on each releases
+  - Wi-Fi ssid and password
+  - Wi-Fi Guest setup
+  - TimeZone [settings](http://openwrt/cgi-bin/luci/admin/system/system)
+  - Dynamic DNS [settings](http://openwrt/cgi-bin/luci/admin/services/ddns)
+  - DHCP Static Leases [settings](http://openwrt/cgi-bin/luci/admin/network/dhcp)
+  - Host entries [settings](http://openwrt/cgi-bin/luci/admin/network/hosts)
+  - Manage Firewall - Zone (wan/lan/guest/vpn) [settings](http://openwrt/cgi-bin/luci/admin/network/firewall)
+  - Firewall - Port Forwards [settings](http://openwrt/cgi-bin/luci/admin/network/firewall/forwards)
+- Manage USB-3.0 and UAS Storage
+- Use USB Dongle LTE/4G as wan interface
+- Enable WPA3 Wi-Fi security encryption - WPA2/WPA3 (PSK/SAE)
+- :heavy_check_mark: include
+- :question: optional depend on config env file
+
+List of packages / services
+  - SFTP fileserver
+  - Samba SMB/CIFS fileserver
+  - NFS fileserver
+  - Dynamic DNS for external IP naming
+  - SQM QoS (aka Smart Queue Management)
+  - Satistics with collectd
+  - Acme certificates and [script](https://raw.githubusercontent.com/Neilpang/acme.sh/master/acme.sh)
+  - uHTTPd UI
+  - OpenVPN
+    - Generate OpenVPN certificates files
+    - Set server for clients to access to local network with local gateway (based on username/password)
+    - Set server point Site-to-Site config with domain suffix capability (based on username/password)
+    - Import existing client config file
+  - IKEv2/IPsec VPN server with strongSwan
+    - Set server for clients to access to local network with local gateway (based on username/password)
+  - adblock
+  - Block ip addresses that track attacks, spyware, viruses
+  - watchcat (periodic reboot or reboot on internet drop)
+  - mSMTP
+
+## How to use with OpenWrt
+
+1. Backup current [config](http://openwrt/cgi-bin/luci/admin/system/flash) (*.tar.gz) and keep:
+  - /etc/shadow to *keep the default login/password*
+  - /etc/acme/<sub.domain.com> to *keep current Acme certificates*
+  - /et/easy-rsa/pki to *keep current OpenVPN certificates*
+2. Add this [repository](https://github.com/joweisberg/openwrt-scripts) files under /root folder on your .tar.gz backup file
+3. **Create** your own **/root/opkg-install.env** file based the [example]((https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/opkg-install.env-example) and add it on your .tar.gz backup file (optional, can be done by script)
+4. **Flash new firmware image** and **Restore** with your new .tar.gz backup file
+5. Open ssh terminal to connect to OpenWrt and
+```bash
+$ ssh openwrt
+```
+6. Start the installation setup and follow the questions
+```bash
+$ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
+```
 
 ## Hardware tested / Firmware downloads
 * [Linksys WRT1900ACS v2](https://openwrt.org/toh/views/toh_fwdownload?dataflt%5BModel*%7E%5D=WRT1900ACS)
@@ -12,10 +67,11 @@
 | --- | --- | --- |
 | [18.06](https://openwrt.org/releases/18.06/start) | [19.07](https://github.com/joweisberg/openwrt-scripts/tree/19.07) | :heavy_check_mark: |
 | [19.07](https://openwrt.org/releases/19.07/start) | [19.07](https://github.com/joweisberg/openwrt-scripts/tree/19.07) | :heavy_check_mark: |
-| [21.02](https://openwrt.org/releases/21.02/start) | [Current](https://github.com/joweisberg/openwrt-scripts) / [21.02](https://github.com/joweisberg/openwrt-scripts/tree/21.02) | :heavy_check_mark: |
+| [21.02](https://openwrt.org/releases/21.02/start) | [Current](https://github.com/joweisberg/openwrt-scripts) | :heavy_check_mark: |
 
 ## Requirements
-* [SanDisk Ultra Fit 16Go Clé USB 3.1](https://www.amazon.fr/gp/product/B077Y149DL)
+- [SanDisk Ultra Fit 16Go Clé USB 3.1](https://www.amazon.fr/gp/product/B077Y149DL)
+- [HUAWEI USB Dongle E3372H LTE/4G](https://www.amazon.fr/gp/product/B011BRKPLE) (optional)
 
 ## Steps available
 
@@ -43,14 +99,14 @@ $ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 
 ### Screenshots
 
-- TBD
+- :construction: TBD :construction:
 
 ---
 
 ### Output sample when "Create and moving Rootfs & Swap on new USB storage"
 
 ```bash
-TBD
+:construction: TBD :construction:
 ```
 
 ### Output sample when "Rebuild Rootfs on existing USB storage"
