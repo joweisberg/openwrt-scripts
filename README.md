@@ -17,23 +17,23 @@
 
 Legend
 - :heavy_check_mark: include by default
-- :question: optional depend on config env file
+- :page_facing_up: optional depend on config env file
 
 List of packages / services
   - SFTP fileserver :heavy_check_mark:
-  - Samba SMB/CIFS fileserver :question:
-  - NFS fileserver :question:
+  - Samba SMB/CIFS fileserver :page_facing_up:
+  - NFS fileserver :page_facing_up:
   - Dynamic DNS for external IP naming :heavy_check_mark:
-  - SQM QoS (aka Smart Queue Management) :question:
-  - Satistics with collectd :question:
+  - SQM QoS (aka Smart Queue Management) :page_facing_up:
+  - Satistics with collectd :page_facing_up:
   - Acme certificates and [script](https://raw.githubusercontent.com/Neilpang/acme.sh/master/acme.sh) :heavy_check_mark:
   - uHTTPd UI :heavy_check_mark:
-  - OpenVPN :question:
+  - OpenVPN :page_facing_up:
     - Generate OpenVPN certificates files
     - Set server for clients to access to local network with local gateway (based on username/password)
     - Set server point Site-to-Site config with domain suffix capability (based on username/password)
     - Import existing client config file
-  - IKEv2/IPsec VPN server with strongSwan :question:
+  - IKEv2/IPsec VPN server with strongSwan :page_facing_up:
     - Set server for clients to access to local network with local gateway (based on username/password)
   - adblock :heavy_check_mark:
   - Block ip addresses that track attacks, spyware, viruses :heavy_check_mark:
