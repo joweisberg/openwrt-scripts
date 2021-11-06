@@ -72,7 +72,7 @@ $ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 | [21.02](https://openwrt.org/releases/21.02/start) | [Current](https://github.com/joweisberg/openwrt-scripts) | :heavy_check_mark: |
 
 ## Requirements
-- [SanDisk Ultra Fit 16Go Clé USB 3.1](https://www.amazon.fr/gp/product/B077Y149DL)
+- [16Go SanDisk Ultra Fit USB 3.1 Flash Drive](https://www.amazon.fr/gp/product/B077Y149DL)
 - [HUAWEI USB Dongle E3372H LTE/4G](https://www.amazon.fr/gp/product/B011BRKPLE) (optional)
 
 ## Steps available
