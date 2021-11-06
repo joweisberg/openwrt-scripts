@@ -16,8 +16,8 @@
 - Enable WPA3 Wi-Fi security encryption - WPA2/WPA3 (PSK/SAE)
 
 Legend
-- :heavy_check_mark: include by default
-- :page_facing_up: optional depend on config env file
+- Include by default :heavy_check_mark:
+- Optional and depend on config env file :page_facing_up:
 
 List of packages / services
   - SFTP fileserver :heavy_check_mark:
