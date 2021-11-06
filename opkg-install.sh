@@ -683,19 +683,6 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
     # Mount swap partition
     swapon $DEVSWAP
     
-#    # Copy rootfs_data partition
-#    echo "* Copy /overlay on $DEVROOT partition..."
-#    mkdir -p /mnt/rootfs_data
-#    mount -t ext4 $DEVROOT /mnt/rootfs_data > /dev/null
-#    # Remove existing data
-#    #rm -Rf /mnt/rootfs_data/*
-#    #tar -C /overlay -cvf - . | tar -C /mnt/rootfs_data -xf -
-#    cp -a -f /overlay/. /mnt/rootfs_data
-#    umount /mnt/rootfs_data
-#    block umount > /dev/null
-#    sleep 2
-#    rm -Rf /mnt/rootfs_data
-
     # Mount data partition
     mkdir -p /mnt/data
     mount -t vfat $DEVDATA /mnt/data > /dev/null
@@ -720,7 +707,7 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
     echo "* "
     echo "* "
     echo "* "
-    echo -n "* Reboot to complete the Rootfs & Swap on USB Storage <enter to continue>..."
+    echo -n "* Reboot to complete \"Rootfs & Swap on USB Storage\" <enter to continue>..."
     read answer
     reboot
     exit 0
@@ -798,7 +785,7 @@ else
     echo "* "
     echo "* "
     echo "* "
-    echo -n "* Reboot to complete the Rootfs & Swap on USB Storage <enter to continue>..."
+    echo -n "* Reboot to complete \"Rootfs & Swap on USB Storage\" <enter to continue>..."
     read answer
     reboot
     exit 0
@@ -1691,12 +1678,17 @@ if [ $WWAN -eq 1 ]; then
   echo "*/3 * * * * /root/healthcheck-wwan.sh" >> /etc/crontabs/root
   echo "# Restart wwan interface @05:00am (sync ip renew every 12h @15h30)" >> /etc/crontabs/root
   echo "30 3 * * * ifdown wwan && sleep 2 && ifup wwan" >> /etc/crontabs/root
+else
+  rm -f /root/healthcheck-wwan.sh
 fi
 
 if [ $FW_FWD_NAS_CERTS -eq 1 ]; then
+  echo "# Check NAS status and Port Forwards http/https every 3 mins" >> /etc/crontabs/root
+  echo "*/3 * * * * /root/healthcheck-nas.sh" >> /etc/crontabs/root
   echo "# Certificate renew every 1st of the month @03:00" >> /etc/crontabs/root
   echo "0 3 1 * * /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh \'Allow-NAS-http\' off && /root/fw-redirect.sh \'Allow-http\' on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force >> /etc/acme/log.txt 2>&1; /root/fw-redirect.sh \'Allow-http\' off && /root/fw-redirect.sh \'Allow-NAS-http\' on && /usr/sbin/ipsec restart" >> /etc/crontabs/root
 else
+  rm -f /root/healthcheck-nas.sh
   echo "# Certificate renew every 1st of the month @03:00" >> /etc/crontabs/root
   echo "0 3 1 * * /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh \'Allow-http\' on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force >> /etc/acme/log.txt 2>&1; /root/fw-redirect.sh \'Allow-http\' off && /usr/sbin/ipsec restart" >> /etc/crontabs/root
 fi
@@ -1808,18 +1800,6 @@ elif [ "$OPENWRT_ARCH" == "mips_24kc" ]; then
 fi
 echo '/root/*.ipk #upgrade opkg exception packages' >> /etc/sysupgrade.conf
 
-
-if [ $WWAN -eq 0 ]; then
-  rm /root/healthcheck-wwan.sh
-fi
-
-
-#if [ $FW_FWD_NAS_CERTS -eq 1 ]; then
-#  cat << EOF >> /etc/crontabs/root
-## Disable healthcheck during NAS server upgrade for 3 mins @06:00
-#0 6 * * * /etc/init.d/healthcheck-url stop && sleep 180 && /etc/init.d/healthcheck-url start
-#EOF
-#fi
 
 if [ -n "$(uci show | grep "$H_WIFI_SSID")" ]; then
   echo "* Remove Hotspot <$H_WIFI_SSID> as of wan zone"
