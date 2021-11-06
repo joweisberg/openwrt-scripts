@@ -107,8 +107,9 @@ $ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 
 ### Output sample when "Create and moving Rootfs & Swap on new USB storage"
 
-```bash
 :construction: will come soon... :construction:
+
+```bash
 ```
 
 ### Output sample when "Rebuild Rootfs on existing USB storage"
