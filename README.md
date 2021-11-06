@@ -44,7 +44,6 @@ $ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 ### Screenshots
 
 - TBD
-- TBD
 
 ---
 
