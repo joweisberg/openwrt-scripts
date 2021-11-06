@@ -95,16 +95,8 @@ done
 # Check all URLs
 if [ $URL_UPDATED -eq 1 ]; then
   URL_UPDATED=0
-
   [ $(cat /tmp/healthcheck-url.dev | grep "FAILED" | wc -l) -gt 0 ] && fSendMail "URL updated status:" "$(cat /tmp/healthcheck-url.dev | grep "FAILED" | awk -F'|' '{print $1" \n\t=> Date: "$3" \n\t=> Error: "$4}' ORS='\n')\n$URL_PASSED" || fSendMail "URL updated status:" "$URL_PASSED"
   URL_PASSED=""
-#  if [ $(cat /tmp/healthcheck-url.dev | grep "FAILED" | wc -l) -gt 0 ]; then
-#    fSendMail "URL are down!" "$(cat /tmp/healthcheck-url.dev | grep "FAILED" | awk -F'|' '{print $1" \n\t=> Date: "$3" \n\t=> Error: "$4}' ORS='\n')"
-#  fi
-#  if [ -n "$URL_PASSED" ]; then
-#    fSendMail "URL are up and running." "$URL_PASSED"
-#    URL_PASSED=""
-#  fi
 fi
 
 exit 0
