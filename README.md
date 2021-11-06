@@ -14,29 +14,31 @@
 - Manage USB-3.0 and UAS Storage
 - Use USB Dongle LTE/4G as wan interface
 - Enable WPA3 Wi-Fi security encryption - WPA2/WPA3 (PSK/SAE)
-- :heavy_check_mark: include
+
+Legend
+- :heavy_check_mark: include by default
 - :question: optional depend on config env file
 
 List of packages / services
-  - SFTP fileserver
-  - Samba SMB/CIFS fileserver
-  - NFS fileserver
-  - Dynamic DNS for external IP naming
-  - SQM QoS (aka Smart Queue Management)
-  - Satistics with collectd
-  - Acme certificates and [script](https://raw.githubusercontent.com/Neilpang/acme.sh/master/acme.sh)
-  - uHTTPd UI
-  - OpenVPN
+  - SFTP fileserver :heavy_check_mark:
+  - Samba SMB/CIFS fileserver :question:
+  - NFS fileserver :question:
+  - Dynamic DNS for external IP naming :heavy_check_mark:
+  - SQM QoS (aka Smart Queue Management) :question:
+  - Satistics with collectd :question:
+  - Acme certificates and [script](https://raw.githubusercontent.com/Neilpang/acme.sh/master/acme.sh) :heavy_check_mark:
+  - uHTTPd UI :heavy_check_mark:
+  - OpenVPN :question:
     - Generate OpenVPN certificates files
     - Set server for clients to access to local network with local gateway (based on username/password)
     - Set server point Site-to-Site config with domain suffix capability (based on username/password)
     - Import existing client config file
-  - IKEv2/IPsec VPN server with strongSwan
+  - IKEv2/IPsec VPN server with strongSwan :question:
     - Set server for clients to access to local network with local gateway (based on username/password)
-  - adblock
-  - Block ip addresses that track attacks, spyware, viruses
-  - watchcat (periodic reboot or reboot on internet drop)
-  - mSMTP
+  - adblock :heavy_check_mark:
+  - Block ip addresses that track attacks, spyware, viruses :heavy_check_mark:
+  - watchcat (periodic reboot or reboot on internet drop) :heavy_check_mark:
+  - mSMTP :heavy_check_mark:
 
 ## How to use with OpenWrt
 
