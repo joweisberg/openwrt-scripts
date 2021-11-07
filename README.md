@@ -45,9 +45,26 @@ List of packages / services
   - watchcat (periodic reboot or reboot on internet drop) :heavy_check_mark:
   - mSMTP :heavy_check_mark:
 
-## How to use with OpenWrt
+### Hardware tested / Firmware to download
+  * [Linksys WRT1900ACS v2](https://openwrt.org/toh/views/toh_fwdownload?dataflt%5BModel*%7E%5D=WRT1900ACS)
+  * [TP-Link Archer C7 v2](https://openwrt.org/toh/views/toh_fwdownload?dataflt%5BModel*~%5D=Archer+c7&dataflt%5BVersions*~%5D=V2)
+  * [TP-Link Archer C7 v5](https://openwrt.org/toh/views/toh_fwdownload?dataflt%5BModel*~%5D=Archer+c7&dataflt%5BVersions*~%5D=V5)
 
-1. Backup current [config](http://openwrt/cgi-bin/luci/admin/system/flash) (*.tar.gz) and keep:
+### Supported OpenWrt build version
+
+  | OpenWrt release | My Branches/Tag | Supported / Tested |
+  | --- | --- | --- |
+  | [18.06](https://openwrt.org/releases/18.06/start) | [19.07](https://github.com/joweisberg/openwrt-scripts/tree/19.07) | :heavy_check_mark: |
+  | [19.07](https://openwrt.org/releases/19.07/start) | [19.07](https://github.com/joweisberg/openwrt-scripts/tree/19.07) | :heavy_check_mark: |
+  | [21.02](https://openwrt.org/releases/21.02/start) | [Current](https://github.com/joweisberg/openwrt-scripts) | :heavy_check_mark: |
+
+### Requirements
+  - [16Go SanDisk Ultra Fit USB 3.1 Flash Drive](https://www.amazon.fr/gp/product/B077Y149DL)
+  - [HUAWEI USB Dongle E3372H LTE/4G](https://www.amazon.fr/gp/product/B011BRKPLE) (optional)
+
+## How to use with OpenWrt UI
+
+1. Backup current [config](http://openwrt/cgi-bin/luci/admin/system/flash) .tar.gz file and **keep only** :
   - /etc/shadow to *keep the default login/password*
   - /etc/acme/<sub.domain.com> to *keep current Acme certificates*
   - /et/easy-rsa/pki to *keep current OpenVPN certificates*
@@ -63,38 +80,21 @@ $ ssh openwrt
 $ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 ```
 
-## Hardware tested / Firmware downloads
-* [Linksys WRT1900ACS v2](https://openwrt.org/toh/views/toh_fwdownload?dataflt%5BModel*%7E%5D=WRT1900ACS)
-* [TP-Link Archer C7 v2](https://openwrt.org/toh/views/toh_fwdownload?dataflt%5BModel*~%5D=Archer+c7&dataflt%5BVersions*~%5D=V2)
-* [TP-Link Archer C7 v5](https://openwrt.org/toh/views/toh_fwdownload?dataflt%5BModel*~%5D=Archer+c7&dataflt%5BVersions*~%5D=V5)
+### Script usage
+```bash
+$ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
+```
 
-### Supported OpenWrt build version
-
-| OpenWrt release | My Branches/Tag | Supported / Tested |
-| --- | --- | --- |
-| [18.06](https://openwrt.org/releases/18.06/start) | [19.07](https://github.com/joweisberg/openwrt-scripts/tree/19.07) | :heavy_check_mark: |
-| [19.07](https://openwrt.org/releases/19.07/start) | [19.07](https://github.com/joweisberg/openwrt-scripts/tree/19.07) | :heavy_check_mark: |
-| [21.02](https://openwrt.org/releases/21.02/start) | [Current](https://github.com/joweisberg/openwrt-scripts) | :heavy_check_mark: |
-
-## Requirements
-- [16Go SanDisk Ultra Fit USB 3.1 Flash Drive](https://www.amazon.fr/gp/product/B077Y149DL)
-- [HUAWEI USB Dongle E3372H LTE/4G](https://www.amazon.fr/gp/product/B011BRKPLE) (optional)
-
-## Steps available
+### Script steps
 
 1. Create and moving Rootfs & Swap on new USB storage
 2. Rebuild Rootfs on existing USB storage
 3. Start OpenWrt setup installation
 
-## Usage
-```bash
-$ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
-```
-
-## How to setup and use variables
+### Script setup variables
 [opkg-install.env-readme](https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/opkg-install.env-readme)
 
-## USB default partitions architecture
+### USB default partitions architecture
 | Device | Type | Label | Default size |
 | --- | --- | --- | --- |
 | sda |
