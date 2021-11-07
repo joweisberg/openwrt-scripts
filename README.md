@@ -102,7 +102,7 @@ $ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 ### Screenshots
 
 - Wireless Overview
-![](https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/Wireless Overview.png)
+![](https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/Wireless%20Overview.png){ width=50% }
 
 ---
 
