@@ -40,7 +40,7 @@ List of packages / services
     - Import existing client config file
   - IKEv2/IPsec VPN server with strongSwan :page_facing_up:
     - Set server for clients to access to local network with local gateway (based on username/password)
-  - adblock :heavy_check_mark:
+  - Adblock :heavy_check_mark:
   - Block ip addresses that track attacks, spyware, viruses :heavy_check_mark:
   - watchcat (periodic reboot or reboot on internet drop) :heavy_check_mark:
   - mSMTP :heavy_check_mark:
@@ -59,11 +59,11 @@ List of packages / services
 | [19.07](https://openwrt.org/releases/19.07/start) | [19.07](https://github.com/joweisberg/openwrt-scripts/tree/19.07) | :heavy_check_mark: |
 | [21.02](https://openwrt.org/releases/21.02/start) | [Current](https://github.com/joweisberg/openwrt-scripts) | :heavy_check_mark: |
 
-### Supported VPN server environment
+### Supported VPN server environments
 
 | VPN | Windows 10 | Android 11 | iOS | Linux |
 | --- | --- | --- | --- | --- |
-| IKEv2/IPsec | :heavy_check_mark: | :heavy_check_mark: | :question: | :question: |
+| IKEv2/IPsec with strongSwan | :heavy_check_mark: | :heavy_check_mark: | :question: | :question: |
 | OpenVPN | :heavy_check_mark: | :heavy_check_mark: | :question: | :question: |
 
 
