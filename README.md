@@ -87,7 +87,7 @@ $ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 ```
 
 ## How to setup and use variables
-[opkg-install.env-example](https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/opkg-install.env-example)
+[opkg-install.env-readme](https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/opkg-install.env-readme)
 
 ## USB default partitions architecture
 | Device | Type | Label | Default size |
