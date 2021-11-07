@@ -53,7 +53,7 @@ List of packages / services
 
 ### Supported OpenWrt build version
 
-| OpenWrt release | My Branches/Tag | Supported / Tested |
+| OpenWrt release | My Branches/Tag | Supported |
 | --- | --- | --- |
 | [18.06](https://openwrt.org/releases/18.06/start) | [19.07](https://github.com/joweisberg/openwrt-scripts/tree/19.07) | :heavy_check_mark: |
 | [19.07](https://openwrt.org/releases/19.07/start) | [19.07](https://github.com/joweisberg/openwrt-scripts/tree/19.07) | :heavy_check_mark: |
