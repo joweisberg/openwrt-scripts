@@ -31,7 +31,7 @@ List of packages / services
   - OpenVPN :page_facing_up:
     - Generate OpenVPN certificates files
     - Set server for clients to access to local network with local gateway (based on username/password)
-    - Set server point Site-to-Site config with domain suffix capability (based on username/password)
+    - Set server Site-to-Site config with domain suffix capability (based on username/password)
     - Import existing client config file
   - IKEv2/IPsec VPN server with strongSwan :page_facing_up:
     - Set server for clients to access to local network with local gateway (based on username/password)
@@ -102,7 +102,25 @@ $ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 ### Screenshots
 
 - Wireless Overview
-![](https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/Wireless%20Overview.png =250x250)
+<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/Wireless Overview.png" height="50px">
+- Interfaces
+<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/Interfaces.png" height="50px">
+- Firewall
+<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/Firewall-1.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/Firewall-2.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/Firewall-3.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/Firewall-4.png" height="50px">
+- Network Shares
+<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/Network Shares.png" height="50px">
+- Scheduled Tasks
+<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/Scheduled Tasks.png" height="50px">
+- Smart Queue Management
+<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/Smart Queue Management-1.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/Smart Queue Management-2.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/Smart Queue Management-3.png" height="50px">
+- Adblock
+<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/Adblock.png" height="50px">
+- OpenVPN instances
+<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/OpenVPN instances.png" height="50px">
+  - OpenVPN Server
+<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/OpenVPN Server-1.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/OpenVPN Server-2.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/OpenVPN Server-3.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/OpenVPN Server-4.png" height="50px">
+  - OpenVPN Server Site-to-Site (s2s)
+<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/OpenVPN Server_s2s-1.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/OpenVPN Server_s2s-2.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/OpenVPN Server_s2s-3.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/master/.img/OpenVPN Server_s2s-4.png" height="50px">
 
 ---
 
