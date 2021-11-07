@@ -1,19 +1,23 @@
 # openwrt-scripts
  OpenWrt scripts for USB-3.0, WPA3, SFTP, SMB, NFS, DDNS, SQM QoS, Acme, OpenVPN, IKEv2/IPsec, adblock, watchcat, mSMTP
 
-## Functionalities
-- Create a generic script to install OpenWrt automatically on each releases
-  - Wi-Fi ssid and password
-  - Wi-Fi Guest setup
-  - TimeZone [settings](http://openwrt/cgi-bin/luci/admin/system/system)
-  - Dynamic DNS [settings](http://openwrt/cgi-bin/luci/admin/services/ddns)
-  - DHCP Static Leases [settings](http://openwrt/cgi-bin/luci/admin/network/dhcp)
-  - Host entries [settings](http://openwrt/cgi-bin/luci/admin/network/hosts)
-  - Manage Firewall - Zone (wan/lan/guest/vpn) [settings](http://openwrt/cgi-bin/luci/admin/network/firewall)
-  - Firewall - Port Forwards [settings](http://openwrt/cgi-bin/luci/admin/network/firewall/forwards)
+## Objective
+Create a generic script to install OpenWrt automatically on each releases
+
+## Main functionalities
+- Wi-Fi SSID and password [settings](http://openwrt/cgi-bin/luci/admin/network/wireless)
+- Wi-Fi SSID_Guest and password [settings](http://openwrt/cgi-bin/luci/admin/network/wireless)
+- TimeZone [settings](http://openwrt/cgi-bin/luci/admin/system/system)
+- Dynamic DNS [settings](http://openwrt/cgi-bin/luci/admin/services/ddns)
+- DHCP Static Leases [settings](http://openwrt/cgi-bin/luci/admin/network/dhcp)
+- Host entries [settings](http://openwrt/cgi-bin/luci/admin/network/hosts)
+- Manage Firewall - Zone (wan/lan/guest/vpn) [settings](http://openwrt/cgi-bin/luci/admin/network/firewall)
+- Firewall - Port Forwards [settings](http://openwrt/cgi-bin/luci/admin/network/firewall/forwards)
 - Manage USB-3.0 and UAS Storage
-- Use USB Dongle LTE/4G as wan interface
+- Able to use USB Dongle LTE/4G as wan interface
 - Enable WPA3 Wi-Fi security encryption - WPA2/WPA3 (PSK/SAE)
+
+## Others functionalities
 
 Legend
 - Include by default :heavy_check_mark:
@@ -25,6 +29,7 @@ List of packages / services
   - NFS fileserver :page_facing_up:
   - Dynamic DNS for external IP naming :heavy_check_mark:
   - SQM QoS (aka Smart Queue Management) :page_facing_up:
+  - Enable Freebox TV QoS advices when Freebox Server is set as bridge :page_facing_up:
   - Satistics with collectd :page_facing_up:
   - Acme certificates and [script](https://raw.githubusercontent.com/Neilpang/acme.sh/master/acme.sh) :heavy_check_mark:
   - uHTTPd UI :heavy_check_mark:
