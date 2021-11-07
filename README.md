@@ -49,7 +49,7 @@ List of packages / services
 2. Add this [repository](https://github.com/joweisberg/openwrt-scripts) files under /root folder on your .tar.gz backup file
 3. **Create** your own **/root/opkg-install.env** file based the [example]((https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/opkg-install.env-example) and add it on your .tar.gz backup file (optional, can be done by script)
 4. **Flash new firmware image** and **Restore** with your new .tar.gz backup file
-5. Open ssh terminal to connect to OpenWrt and
+5. Open ssh terminal to connect to OpenWrt
 ```bash
 $ ssh openwrt
 ```
