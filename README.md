@@ -46,21 +46,31 @@ List of packages / services
   - mSMTP :heavy_check_mark:
 
 ### Hardware tested / Firmware to download
-  * [Linksys WRT1900ACS v2](https://openwrt.org/toh/views/toh_fwdownload?dataflt%5BModel*%7E%5D=WRT1900ACS)
-  * [TP-Link Archer C7 v2](https://openwrt.org/toh/views/toh_fwdownload?dataflt%5BModel*~%5D=Archer+c7&dataflt%5BVersions*~%5D=V2)
-  * [TP-Link Archer C7 v5](https://openwrt.org/toh/views/toh_fwdownload?dataflt%5BModel*~%5D=Archer+c7&dataflt%5BVersions*~%5D=V5)
+
+* [Linksys WRT1900ACS v2](https://openwrt.org/toh/views/toh_fwdownload?dataflt%5BModel*%7E%5D=WRT1900ACS)
+* [TP-Link Archer C7 v2](https://openwrt.org/toh/views/toh_fwdownload?dataflt%5BModel*~%5D=Archer+c7&dataflt%5BVersions*~%5D=V2)
+* [TP-Link Archer C7 v5](https://openwrt.org/toh/views/toh_fwdownload?dataflt%5BModel*~%5D=Archer+c7&dataflt%5BVersions*~%5D=V5)
 
 ### Supported OpenWrt build version
 
-  | OpenWrt release | My Branches/Tag | Supported / Tested |
-  | --- | --- | --- |
-  | [18.06](https://openwrt.org/releases/18.06/start) | [19.07](https://github.com/joweisberg/openwrt-scripts/tree/19.07) | :heavy_check_mark: |
-  | [19.07](https://openwrt.org/releases/19.07/start) | [19.07](https://github.com/joweisberg/openwrt-scripts/tree/19.07) | :heavy_check_mark: |
-  | [21.02](https://openwrt.org/releases/21.02/start) | [Current](https://github.com/joweisberg/openwrt-scripts) | :heavy_check_mark: |
+| OpenWrt release | My Branches/Tag | Supported / Tested |
+| --- | --- | --- |
+| [18.06](https://openwrt.org/releases/18.06/start) | [19.07](https://github.com/joweisberg/openwrt-scripts/tree/19.07) | :heavy_check_mark: |
+| [19.07](https://openwrt.org/releases/19.07/start) | [19.07](https://github.com/joweisberg/openwrt-scripts/tree/19.07) | :heavy_check_mark: |
+| [21.02](https://openwrt.org/releases/21.02/start) | [Current](https://github.com/joweisberg/openwrt-scripts) | :heavy_check_mark: |
+
+### Supported VPN server environment
+
+| VPN | Windows 10 | Android 11 | iOS | Linux |
+| --- | --- | --- | --- | --- |
+| IKEv2/IPsec | :heavy_check_mark: | :heavy_check_mark: | :question: | :question: |
+| OpenVPN | :heavy_check_mark: | :heavy_check_mark: | :question: | :question: |
+
 
 ### Requirements
-  - [16Go SanDisk Ultra Fit USB 3.1 Flash Drive](https://www.amazon.fr/gp/product/B077Y149DL)
-  - [HUAWEI USB Dongle E3372H LTE/4G](https://www.amazon.fr/gp/product/B011BRKPLE) (optional)
+
+- [16Go SanDisk Ultra Fit USB 3.1 Flash Drive](https://www.amazon.fr/gp/product/B077Y149DL)
+- [HUAWEI USB Dongle E3372H LTE/4G](https://www.amazon.fr/gp/product/B011BRKPLE) (optional)
 
 ## How to use with OpenWrt UI
 
