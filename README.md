@@ -2,7 +2,7 @@
  OpenWrt scripts for USB 3.0, WPA3, SFTP, SMB, NFS, DDNS, SQM QoS, Acme, OpenVPN, IKEv2/IPsec, adblock, watchcat, mSMTP
 
 ## Objective
-Create a generic script to install OpenWrt automatically on each new release
+Create a generic script to **install custom OpenWrt configuration automatically** on each new release, **since 2018 and is now stable**
 
 ## Main functionalities
 - Wi-Fi SSID and password [settings](http://openwrt/cgi-bin/luci/admin/network/wireless)
