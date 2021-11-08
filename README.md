@@ -1,5 +1,5 @@
 # openwrt-scripts
- OpenWrt scripts for USB-3.0, WPA3, SFTP, SMB, NFS, DDNS, SQM QoS, Acme, OpenVPN, IKEv2/IPsec, adblock, watchcat, mSMTP
+ OpenWrt scripts for USB 3.0, WPA3, SFTP, SMB, NFS, DDNS, SQM QoS, Acme, OpenVPN, IKEv2/IPsec, adblock, watchcat, mSMTP
 
 ## Objective
 Create a generic script to install OpenWrt automatically on each releases
@@ -13,7 +13,7 @@ Create a generic script to install OpenWrt automatically on each releases
 - Host entries [settings](http://openwrt/cgi-bin/luci/admin/network/hosts)
 - Manage Firewall - Zone (wan/lan/guest/vpn) [settings](http://openwrt/cgi-bin/luci/admin/network/firewall)
 - Firewall - Port Forwards [settings](http://openwrt/cgi-bin/luci/admin/network/firewall/forwards)
-- Manage USB-3.0 and UAS Storage
+- Manage USB 3.0 and UAS Storage with ext4 / FAT / exFAT / ntfs supported filesystem
 - Able to use USB Dongle LTE/4G as wan interface
 - Enable WPA3 Wi-Fi security encryption - WPA2/WPA3 (PSK/SAE)
 
@@ -28,6 +28,7 @@ List of packages / services
   - Samba SMB/CIFS fileserver :page_facing_up:
   - NFS fileserver :page_facing_up:
   - Dynamic DNS for external IP naming :heavy_check_mark:
+  - Advanced Reboot UI :page_facing_up:
   - SQM QoS (aka Smart Queue Management) :page_facing_up:
   - Enable Freebox TV QoS advices when Freebox Server is set as bridge :page_facing_up:
   - Satistics with collectd :page_facing_up:
