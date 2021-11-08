@@ -2,7 +2,7 @@
  OpenWrt scripts for USB 3.0, WPA3, SFTP, SMB, NFS, DDNS, SQM QoS, Acme, OpenVPN, IKEv2/IPsec, adblock, watchcat, mSMTP
 
 ## Objective
-Create a generic script to install OpenWrt automatically on each releases
+Create a generic script to install OpenWrt automatically on each new release
 
 ## Main functionalities
 - Wi-Fi SSID and password [settings](http://openwrt/cgi-bin/luci/admin/network/wireless)
@@ -14,6 +14,7 @@ Create a generic script to install OpenWrt automatically on each releases
 - Manage Firewall - Zone (wan/lan/guest/vpn) [settings](http://openwrt/cgi-bin/luci/admin/network/firewall)
 - Firewall - Port Forwards [settings](http://openwrt/cgi-bin/luci/admin/network/firewall/forwards)
 - Manage USB 3.0 and UAS Storage with ext4 / FAT / exFAT / ntfs supported filesystem
+- Create and moving Rootfs & Swap on USB storage
 - Able to use USB Dongle LTE/4G as wan interface
 - Enable WPA3 Wi-Fi security encryption - WPA2/WPA3 (PSK/SAE)
 
@@ -45,6 +46,21 @@ List of packages / services
   - Block ip addresses that track attacks, spyware, viruses :heavy_check_mark:
   - watchcat (periodic reboot or reboot on internet drop) :heavy_check_mark:
   - mSMTP :heavy_check_mark:
+
+Terminal OpenWrt status on login
+- General system information
+- Disk usage
+- Network information
+- Network devices
+- IPsec connected users
+- OpenVPN connected users
+- Keep system up to date
+
+Healthcheck
+- wifi: Check wifi radios/devices every 1 min :heavy_check_mark:
+- url: Check url(s) status every 3 mins :heavy_check_mark:
+- wwan: Check LTE connection every 3 mins :page_facing_up:
+- nas: Check NAS status and Port Forwards http/https every 3 mins :page_facing_up:
 
 ### Hardware tested / Firmware to download
 
