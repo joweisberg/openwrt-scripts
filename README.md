@@ -61,10 +61,10 @@ List of packages / services
 
 ### Supported VPN server environments
 
-| VPN server | Windows 10 | Android 11 | iOS | Linux |
+| VPN server | Linux | Windows 10 | Android 11 | iOS |
 | --- | --- | --- | --- | --- |
-| IKEv2/IPsec with strongSwan | :heavy_check_mark: | :heavy_check_mark: | :question: | :question: |
-| OpenVPN | :heavy_check_mark: | :heavy_check_mark: | :question: | :question: |
+| IKEv2/IPsec with strongSwan | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :question: |
+| OpenVPN | :heavy_check_mark: | :heavy_check_mark: | :heavy_check_mark: | :question: |
 
 
 ### Requirements
