@@ -17,6 +17,7 @@ Create a generic script to **install custom OpenWrt configuration automatically*
 - Create and moving Rootfs & Swap on USB storage
 - Able to use USB Dongle LTE/4G as wan interface
 - Enable WPA3 Wi-Fi security encryption - WPA2/WPA3 (PSK/SAE)
+- Adblock running on the router
 
 ## Others functionalities
 
