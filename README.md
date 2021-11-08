@@ -1,5 +1,5 @@
 # openwrt-scripts
- OpenWrt scripts for USB 3.0, WPA3, SFTP, SMB, NFS, DDNS, SQM QoS, Acme, OpenVPN, IKEv2/IPsec, adblock, watchcat, mSMTP
+ OpenWrt scripts for USB 3.0, WPA3, SFTP, SMB, NFS, DDNS, SQM QoS, Acme, OpenVPN, IKEv2/IPsec, Adblock, Watchcat, mSMTP
 
 ## Objective
 Create a generic script to **install custom OpenWrt configuration automatically** on each new release, **since 2018 and is now stable**
@@ -44,8 +44,8 @@ List of packages / services
     - Set server for clients to access to local network with local gateway (based on username/password)
   - Adblock :heavy_check_mark:
   - Block ip addresses that track attacks, spyware, viruses :heavy_check_mark:
-  - watchcat (periodic reboot or reboot on internet drop) :heavy_check_mark:
-  - mSMTP :heavy_check_mark:
+  - Watchcat - network watchdog (periodic reboot or reboot on internet drop) :heavy_check_mark:
+  - mSMTP - SMTP clients :heavy_check_mark:
 
 Terminal OpenWrt status on login
 - General system information
