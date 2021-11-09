@@ -649,7 +649,7 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
 
 
     echo "* "
-    echo "* Format partitions on swap/ext4/fat32"
+    echo "* Format partitions with swap/ext4/fat32"
     mkswap $DEVSWAP > /dev/null 2>&1
     mkfs.ext4 -F -L "rootfs_data" $DEVROOT > /dev/null 2>&1
     mkfs.fat -F 32 -n "data" $DEVDATA > /dev/null 2>&1
@@ -757,7 +757,7 @@ else
     USBDEV=${DEVROOT%?}
 
     echo "* "
-    echo "* Format partitions on swap/ext4"
+    echo "* Format partitions with swap/ext4"
     mkswap $DEVSWAP > /dev/null 2>&1
     mkfs.ext4 -F -L "rootfs_data" $DEVROOT > /dev/null 2>&1
     
