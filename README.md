@@ -219,7 +219,7 @@ Device     Boot   Start      End  Sectors  Size Id Type
 * Reboot to complete partitions creation on /dev/sda? [y/N]
 * Please unplug and plug back in /dev/sda <enter to continue>...
 *
-* Format partitions on swap/ext4/fat32
+* Format partitions with swap/ext4/fat32
 *
 * Partitions detail for /dev/sda:
 NAME   FSTYPE FSVER LABEL       UUID                                 FSAVAIL FSUSE% MOUNTPOINT
@@ -275,7 +275,7 @@ NAME   FSTYPE LABEL       UUID                                 FSAVAIL FSUSE% MO
 * Enter swap device? </dev/sda1>
 * Enter rootfs_data device? </dev/sda2>
 *
-* Format partitions on swap/ext4
+* Format partitions with swap/ext4
 *
 * Partitions detail for /dev/sda:
 NAME   FSTYPE LABEL       UUID                                 FSAVAIL FSUSE% MOUNTPOINT
