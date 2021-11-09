@@ -449,14 +449,16 @@ else
   read answer
 fi
 if [ -n "$(echo $answer | grep -i '^y')" ]; then
+  echo -n "* Please unplug USB storage <enter to continue>..."
+  read answer
 
   if [ -z "$(opkg list-installed | grep lsblk)" ]; then
     fInstallUsbPackages
-    echo "* Package disk utilities"
+    echo "* Install disk utilities packages"
     fCmd opkg install usbutils e2fsprogs dosfstools wipefs fdisk lsblk
   fi
 
-  echo -n "* Please plug in USB storage <enter to continue>..."
+  echo -n "* Please plug back in USB storage <enter to continue>..."
   read answer
 
   echo "* "
@@ -466,8 +468,6 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
   echo "* "
   lsblk -f /dev/sd[a-d]
   echo "* "
-  #ls -1 /dev/sd[a-d]
-  #echo "* "
   
   if [ -z "$USBDEV" ]; then
     USBDEV="/dev/sda"
@@ -726,8 +726,8 @@ else
     
     if [ -z "$(opkg list-installed | grep lsblk)" ]; then
       fInstallUsbPackages
-      echo "* Install utilities packages"
-      fCmd opkg install lsblk
+      echo "* Install disk utilities packages"
+      fCmd opkg install usbutils e2fsprogs dosfstools wipefs fdisk lsblk
     fi
 
     echo -n "* Please plug back in USB storage <enter to continue>..."
@@ -738,8 +738,6 @@ else
     echo "* "
     lsblk -f /dev/sd[a-d]
     echo "* "
-    #ls -1 /dev/sd[a-d]*
-    #echo "* "
     
     DEVSWAP=$(block info | grep 'swap' | cut -d':' -f1)
     echo -n "* Enter swap device? <$DEVSWAP> "
@@ -766,8 +764,8 @@ else
     lsblk -f $USBDEV
     echo "* "
 
-    echo "* Remove utilities packages"
-    opkg remove --autoremove lsblk > /dev/null 2>&1
+    echo "* Remove disk utilities packages"
+    opkg remove --autoremove usbutils e2fsprogs dosfstools wipefs fdisk lsblk > /dev/null 2>&1
 
     fMountPartitions $USBDEV
 

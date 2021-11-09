@@ -159,9 +159,89 @@ $ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 
 ### Output sample when "Create and moving Rootfs & Swap on new USB storage"
 
-:construction: will come soon... :construction:
-
 ```bash
+* Set access rights on uploaded files
+*
+* You are connected to the internet.
+*
+* Create and moving Rootfs & Swap on new USB storage? [y/N] y
+* Please unplug USB storage <enter to continue>...
+* Checking for updates, please wait...
+* Package USB 3.0 disk management
+* Package ext4/FAT
+* Package mounted partitions
+* Package exFAT/ntfs
+* Package hd-idle
+* Package SFTP fileserver
+* Package wget
+* Install disk utilities packages
+* Please plug back in USB storage <enter to continue>...
+*
+* List of available USB devices:
+*
+Disk /dev/sda: 14.32 GiB, 15376318464 bytes, 30031872 sectors
+Disk model: Ultra Fit
+Disklabel type: dos
+Device     Boot   Start      End  Sectors  Size Id Type
+/dev/sda1          2048  1050623 20592640 13.8G 83 Linux
+*
+NAME   FSTYPE LABEL       UUID                                 FSAVAIL FSUSE% MOUNTPOINT
+sda
+└─sda1 vfat   data        8FC8-3FAD
+*
+* Enter USB device? </dev/sda>
+* Unmount all 3 partitions on /dev/sda
+* Built-in USB device for /dev/sda? [y/N] y
+* Wiping all signatures for /dev/sda
+*
+*
+*
+* Reboot to complete wipefs on /dev/sda? [y/N]
+* Please unplug and plug back in /dev/sda <enter to continue>...
+* Info: Double RAM for machines with 512MB of RAM or less than, and same with more.
+* Current RAM: 512MB
+* Enter swap partition size? <512MB>
+* Enter root partition size? <4GB>
+* Create data partition of <9.6GB>
+*
+* Partitions detail for /dev/sda:
+Disk /dev/sda: 14.32 GiB, 15376318464 bytes, 30031872 sectors
+Disk model: Ultra Fit
+Disklabel type: dos
+Device     Boot   Start      End  Sectors  Size Id Type
+/dev/sda1          2048  1050623  1048576  512M 83 Linux
+/dev/sda2       1050624  9439231  8388608    4G 83 Linux
+/dev/sda3       9439232 30031871 20592640  9.8G 83 Linux
+*
+*
+*
+*
+* Reboot to complete partitions creation on /dev/sda? [y/N]
+* Please unplug and plug back in /dev/sda <enter to continue>...
+*
+* Format partitions on swap/ext4/fat32
+*
+* Partitions detail for /dev/sda:
+NAME   FSTYPE FSVER LABEL       UUID                                 FSAVAIL FSUSE% MOUNTPOINT
+sda
+├─sda1 swap                                                                         [SWAP]
+├─sda2 ext4         rootfs_data 98d50326-db8a-4314-ba22-2d91864e3381    3.6G     2% /overlay
+└─sda3 vfat         data        8FC8-3FAD                               9.6G     2% /mnt/data
+*
+* Remove disk utilities packages
+*
+* Add swap of 512MB on /dev/sda1
+* Move overlayfs:/overlay to 4GB on /dev/sda2
+* Add free storage of 9.6GB on /dev/sda3
+*
+* UCI config fstab
+* Enable all mounted partitions
+* Please check mounted partitions http://openwrt/cgi-bin/luci/admin/system/mounts
+* Copy /overlay on /dev/sda2 partition...
+*
+*
+*
+* Reboot to complete "Rootfs & Swap on USB Storage" <enter to continue>...
 ```
 
 ### Output sample when "Rebuild Rootfs on existing USB storage"
@@ -182,18 +262,15 @@ $ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 * Package hd-idle
 * Package SFTP fileserver
 * Package wget
-* Install utilities packages
+* Install disk utilities packages
 * Please plug back in USB storage <enter to continue>...
 *
 * List of available USB devices:
 *
 NAME   FSTYPE LABEL       UUID                                 FSAVAIL FSUSE% MOUNTPOINT
-sda
-├─sda1 swap
-├─sda2 ext4   rootfs_data 98d50326-db8a-4314-ba22-2d91864e3381
-└─sda3 vfat   data        8FC8-3FAD
-sdb
-└─sdb1 ext4   htpc-backup e7dd7bf0-2a4b-4d2a-9251-713479cdf1f3
+├─sda1 swap                                                                         [SWAP]
+├─sda2 ext4         rootfs_data 98d50326-db8a-4314-ba22-2d91864e3381    3.6G     2% /overlay
+└─sda3 vfat         data        8FC8-3FAD                               9.6G     2% /mnt/data
 *
 * Enter swap device? </dev/sda1>
 * Enter rootfs_data device? </dev/sda2>
@@ -202,12 +279,11 @@ sdb
 *
 * Partitions detail for /dev/sda:
 NAME   FSTYPE LABEL       UUID                                 FSAVAIL FSUSE% MOUNTPOINT
-sda
-├─sda1 swap
-├─sda2 ext4   rootfs_data 98d50326-db8a-4314-ba22-2d91864e3381
-└─sda3 vfat   data        8FC8-3FAD
+├─sda1 swap                                                                         [SWAP]
+├─sda2 ext4         rootfs_data 98d50326-db8a-4314-ba22-2d91864e3381    3.6G     2% /overlay
+└─sda3 vfat         data        8FC8-3FAD                               9.6G     2% /mnt/data
 *
-* Remove utilities packages
+* Remove disk utilities packages
 * UCI config fstab
 * Enable all mounted partitions
 * Please check mounted partitions http://openwrt/cgi-bin/luci/admin/system/mounts
@@ -215,7 +291,7 @@ sda
 *
 *
 *
-* Reboot to complete the Rootfs & Swap on USB Storage <enter to continue>...
+* Reboot to complete the "Rootfs & Swap on USB Storage" <enter to continue>...
 ```
 
 ### Output sample when "Start OpenWrt setup installation"
