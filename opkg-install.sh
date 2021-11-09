@@ -44,13 +44,13 @@ IFS=$'\n'
 source /etc/os-release
 
 ENV=0
-DOMAIN="${1:-ejw}.root.sx"  ## This domain must actually point to your router
+DOMAIN="${1:-sub.domain.com}"  ## This domain must actually point to your router
 LOCAL_DOMAIN="${DOMAIN%%.*}"
-WIFI_SSID="Box-AA3E"
-WIFI_KEY="Box-EJW.!#_$(date +'%Y')"
-WIFI_GUEST_KEY="Weisberg$(date +'%Y')"
+WIFI_SSID="Box-$(tr -dc A-Z < /dev/urandom | head -c4)"
+WIFI_KEY="$WIFI_SSID-$(date +'%Y')."
+WIFI_GUEST_KEY="Guest$(date +'%Y')"
 BRIDGED_AP=0                ## Extend your existing wired host router to have wireless capabilities (same network, different ip)
-IPADDR="192.168.10.1"
+IPADDR="192.168.1.1"
 IPADDR_GTW=${IPADDR_GTW:-$IPADDR}
 NETADDR=${IPADDR%.*}
 NETADDR_GUEST="10.10.10"
@@ -124,7 +124,7 @@ function fInstallUsbPackages() {
     fCmd opkg install block-mount
     
     echo "* Package exFAT/ntfs"
-#    echo "* Do not install packages WPA3, SQM QoS, Acme, uHTTPd, strongswan/IKEv2, Collectd/Stats, adblock, watchcat, mSMTP!"
+#    echo "* Do not install packages WPA3, SQM QoS, Acme, uHTTPd, IKEv2/IPsec with strongSwan, Collectd/Stats, Adblock, Watchcat, mSMTP!"
     fCmd opkg install kmod-fs-exfat libblkid ntfs-3g
     echo "* Package hd-idle"
     fCmd opkg install luci-app-hd-idle
@@ -1243,7 +1243,7 @@ uci commit dhcp
 
 
 ###############################################################################
-##### Package USB-3.0, UWAN, WWAN, WPA3, SFTP, SMB, NFS, DDNS, SQM QoS, Collectd/Stats, Acme, uHTTPd, OpenVPN, strongswan/IKEv2, adblock, crontab, watchcat, mSMTP
+##### Package USB-3.0, UWAN, WWAN, WPA3, SFTP, SMB, NFS, DDNS, SQM QoS, Collectd/Stats, Acme, uHTTPd, OpenVPN, IKEv2/IPsec with strongSwan, Adblock, crontab, Watchcat, mSMTP
 ###############################################################################
 
 echo "* Checking for updates, please wait..."
