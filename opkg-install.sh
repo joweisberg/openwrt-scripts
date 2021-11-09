@@ -46,8 +46,8 @@ source /etc/os-release
 ENV=0
 DOMAIN="${1:-sub.domain.com}"   ## This domain must actually point to your router
 LOCAL_DOMAIN="${DOMAIN%%.*}"
-WIFI_SSID="Box-$(tr -dc A-Z < /dev/urandom | head -c4)"
-WIFI_KEY="$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 13)"
+WIFI_SSID="Box-$(cat /dev/urandom | tr -dc A-Z | head -c4)"
+WIFI_KEY="$(cat /dev/urandom | tr -dc A-Za-z0-9 | head -c13)"
 WIFI_GUEST_KEY="Guest$(date +'%Y')"
 BRIDGED_AP=0                    ## Extend your existing wired host router to have wireless capabilities (same network, different ip)
 IPADDR="192.168.1.1"
