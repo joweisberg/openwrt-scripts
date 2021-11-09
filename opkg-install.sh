@@ -1619,8 +1619,8 @@ chmod 777 /etc/acme/$DOMAIN
 
 
 
-~/opkg-install_openvpn.sh
-~/opkg-install_strongswan.sh
+[ $(cat ./opkg-install.env | grep "^VPN_" | wc -l) -gt 0 ] && ~/opkg-install_openvpn.sh
+[ $(cat ./opkg-install.env | grep "^VPN_USER=" | wc -l) -gt 0 ] && ~/opkg-install_strongswan.sh
 
 
 
