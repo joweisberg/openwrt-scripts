@@ -202,7 +202,7 @@ sda
 * Current RAM: 512MB
 * Enter swap partition size? <512MB>
 * Enter root partition size? <4GB>
-* Create data partition of <9.6GB>
+* Create data partition of <10GB>
 *
 * Partitions detail for /dev/sda:
 Disk /dev/sda: 14.32 GiB, 15376318464 bytes, 30031872 sectors
