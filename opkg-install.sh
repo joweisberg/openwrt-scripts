@@ -44,13 +44,13 @@ IFS=$'\n'
 source /etc/os-release
 
 ENV=0
-DOMAIN="${1:-ejw}.root.sx"  ## This domain must actually point to your router
+DOMAIN="${1:-sub.domain.com}"   ## This domain must actually point to your router
 LOCAL_DOMAIN="${DOMAIN%%.*}"
-WIFI_SSID="Box-AA3E"
-WIFI_KEY="Box-EJW.!#_$(date +'%Y')"
-WIFI_GUEST_KEY="Weisberg$(date +'%Y')"
-BRIDGED_AP=0                ## Extend your existing wired host router to have wireless capabilities (same network, different ip)
-IPADDR="192.168.10.1"
+WIFI_SSID="Box-$(tr -dc A-Z < /dev/urandom | head -c4)"
+WIFI_KEY="$(tr -dc A-Za-z0-9 < /dev/urandom | head -c 13)"
+WIFI_GUEST_KEY="Guest$(date +'%Y')"
+BRIDGED_AP=0                    ## Extend your existing wired host router to have wireless capabilities (same network, different ip)
+IPADDR="192.168.1.1"
 IPADDR_GTW=${IPADDR_GTW:-$IPADDR}
 NETADDR=${IPADDR%.*}
 NETADDR_GUEST="10.10.10"
@@ -1614,8 +1614,8 @@ chmod 777 /etc/acme/$DOMAIN
 
 
 
-~/opkg-install_openvpn.sh
-~/opkg-install_strongswan.sh
+[ $(cat ./opkg-install.env | grep "^VPN_" | wc -l) -gt 0 ] && ~/opkg-install_openvpn.sh
+[ $(cat ./opkg-install.env | grep "^VPN_USER=" | wc -l) -gt 0 ] && ~/opkg-install_strongswan.sh
 
 
 
