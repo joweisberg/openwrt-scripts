@@ -10,7 +10,8 @@ for V in "$@"; do
   
   # firewall.@redirect[1].name='Allow-http'
   # firewall.@redirect[1].enabled='1'
-  if [ $(uci show firewall | grep @redirect | grep ".name='$name'") ]; then
+  L=$(uci show firewall | grep @redirect | grep ".name='$name'")
+  if [ -n "$L" ]; then
     I=$(echo "$L" | awk -F'[][]' '{print $2}')
     
 #    echo "* firewall.@redirect[$I].name='$name'"    
@@ -21,7 +22,6 @@ for V in "$@"; do
 #      echo "* firewall.@redirect[$I].enabled='0'"
       uci set firewall.@redirect[$I].enabled='0'
     fi
-    
   fi
 done
 
