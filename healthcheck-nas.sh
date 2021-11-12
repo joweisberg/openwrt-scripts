@@ -99,7 +99,7 @@ if [ $URL_UPDATED -eq 1 ]; then
   URL_PASSED=""
 
   # Change Port Forwards http/https to the router (FAILED) or to the NAS (PASSED)
-  [ $(cat /tmp/healthcheck-nas.dev | grep "FAILED" | wc -l) -gt 0 ] && /root/fw-redirect.sh Allow-http=on Allow-https=on Allow-NAS-http\=off Allow-NAS-https=off || /root/fw-redirect.sh Allow-http=off Allow-https=off Allow-NAS-http=on Allow-NAS-https=on
+  [ $(cat /tmp/healthcheck-nas.dev | grep "FAILED" | wc -l) -gt 0 ] && /root/fw-redirect.sh Allow-http=on Allow-https=on Allow-NAS-http=off Allow-NAS-https=off || /root/fw-redirect.sh Allow-http=off Allow-https=off Allow-NAS-http=on Allow-NAS-https=on
 fi
 
 exit 0
