@@ -1591,15 +1591,15 @@ uci commit acme
 
 echo "* Get ACME certificates"
 if [ $FW_FWD_NAS_CERTS -eq 1 ]; then
-  /root/fw-redirect.sh \'Allow-NAS-http\' off && /root/fw-redirect.sh \'Allow-http\' on
+  /root/fw-redirect.sh Allow-http=on Allow-NAS-http=off
 else
-  /root/fw-redirect.sh \'Allow-http\' on
+  /root/fw-redirect.sh Allow-http=on
 fi
 /etc/acme/acme.sh --home /etc/acme --issue --server letsencrypt -d $DOMAIN -w /www
 if [ $FW_FWD_NAS_CERTS -eq 1 ]; then
-  /root/fw-redirect.sh \'Allow-http\' off && /root/fw-redirect.sh \'Allow-NAS-http\' on
+  /root/fw-redirect.sh Allow-http=off Allow-NAS-http=on
 else
-  /root/fw-redirect.sh \'Allow-http\' off
+  /root/fw-redirect.sh Allow-http=off
 fi
 
 echo "* Package uHTTPd UI"
@@ -1681,11 +1681,11 @@ if [ $FW_FWD_NAS_CERTS -eq 1 ]; then
   echo "# Check NAS status and Port Forwards http/https every 3 mins" >> /etc/crontabs/root
   echo "*/3 * * * * /root/healthcheck-nas.sh" >> /etc/crontabs/root
   echo "# Certificate renew every 1st of the month @03:00" >> /etc/crontabs/root
-  echo "0 3 1 * * /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh \'Allow-NAS-http\' off && /root/fw-redirect.sh \'Allow-http\' on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force >> /etc/acme/log.txt 2>&1; /root/fw-redirect.sh \'Allow-http\' off && /root/fw-redirect.sh \'Allow-NAS-http\' on && /usr/sbin/ipsec restart" >> /etc/crontabs/root
+  echo "0 3 1 * * /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on Allow-NAS-http=off && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force >> /etc/acme/log.txt 2>&1; /root/fw-redirect.sh Allow-http=off Allow-NAS-http=on && /usr/sbin/ipsec restart" >> /etc/crontabs/root
 else
   rm -f /root/healthcheck-nas.sh
   echo "# Certificate renew every 1st of the month @03:00" >> /etc/crontabs/root
-  echo "0 3 1 * * /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh \'Allow-http\' on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force >> /etc/acme/log.txt 2>&1; /root/fw-redirect.sh \'Allow-http\' off && /usr/sbin/ipsec restart" >> /etc/crontabs/root
+  echo "0 3 1 * * /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force >> /etc/acme/log.txt 2>&1; /root/fw-redirect.sh Allow-http=off && /usr/sbin/ipsec restart" >> /etc/crontabs/root
 fi
 
 echo "* Package watchcat (periodic reboot or reboot on internet drop)"
@@ -1823,9 +1823,9 @@ echo "* "
 echo "* "
 echo "* Get ACME certificates command line to run, if encountered errors during installation!"
 if [ $FW_FWD_NAS_CERTS -eq 1 ]; then
-  echo "/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh \'Allow-NAS-http\' off && /root/fw-redirect.sh \'Allow-http\' on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh \'Allow-http\' off && /root/fw-redirect.sh \'Allow-NAS-http\' on && /usr/sbin/ipsec restart"
+  echo "/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on Allow-NAS-http=off && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off Allow-NAS-http=on && /usr/sbin/ipsec restart"
 else
-  echo "/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh \'Allow-http\' on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh \'Allow-http\' off && /usr/sbin/ipsec restart"
+  echo "/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off && /usr/sbin/ipsec restart"
 fi
 echo "* "
 echo "* "
