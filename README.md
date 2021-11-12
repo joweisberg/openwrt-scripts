@@ -398,10 +398,16 @@ cp: can't stat 'acme.sh': No such file or directory
 * Remove duplicated conffile
 *
 *
+******************************
+ /!\ After reboot checks /!\\
+******************************
 *
-* Get ACME certificates command line to run, if necessary!
-/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh /root/fw-redirect.sh \'Allow-http\' on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh \'Allow-http\' off && /usr/sbin/ipsec restart
 *
+* Please check swap mounted partition http://openwrt/cgi-bin/luci/admin/system/mounts
+*
+*
+* Get ACME certificates command line to run, if encountered errors during installation!
+/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off && /usr/sbin/ipsec restart
 *
 *
 * Reboot to complete the installation? [Y/n]
