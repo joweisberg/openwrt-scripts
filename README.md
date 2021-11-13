@@ -224,9 +224,9 @@ Device     Boot   Start      End  Sectors  Size Id Type
 * Partitions detail for /dev/sda:
 NAME   FSTYPE FSVER LABEL       UUID                                 FSAVAIL FSUSE% MOUNTPOINT
 sda
-├─sda1 swap                                                                         [SWAP]
-├─sda2 ext4         rootfs_data 98d50326-db8a-4314-ba22-2d91864e3381    3.6G     2% /overlay
-└─sda3 vfat         data        8FC8-3FAD                               9.6G     2% /mnt/data
+├─sda1 swap
+├─sda2 ext4         rootfs_data 98d50326-db8a-4314-ba22-2d91864e3381
+└─sda3 vfat         data        8FC8-3FAD
 *
 * Remove disk utilities packages
 *
@@ -268,9 +268,9 @@ sda
 * List of available USB devices:
 *
 NAME   FSTYPE LABEL       UUID                                 FSAVAIL FSUSE% MOUNTPOINT
-├─sda1 swap                                                                         [SWAP]
-├─sda2 ext4         rootfs_data 98d50326-db8a-4314-ba22-2d91864e3381    3.6G     2% /overlay
-└─sda3 vfat         data        8FC8-3FAD                               9.6G     2% /mnt/data
+├─sda1 swap
+├─sda2 ext4         rootfs_data 98d50326-db8a-4314-ba22-2d91864e3381
+└─sda3 vfat         data        8FC8-3FAD
 *
 * Enter swap device? </dev/sda1>
 * Enter rootfs_data device? </dev/sda2>
@@ -279,9 +279,9 @@ NAME   FSTYPE LABEL       UUID                                 FSAVAIL FSUSE% MO
 *
 * Partitions detail for /dev/sda:
 NAME   FSTYPE LABEL       UUID                                 FSAVAIL FSUSE% MOUNTPOINT
-├─sda1 swap                                                                         [SWAP]
-├─sda2 ext4         rootfs_data 98d50326-db8a-4314-ba22-2d91864e3381    3.6G     2% /overlay
-└─sda3 vfat         data        8FC8-3FAD                               9.6G     2% /mnt/data
+├─sda1 swap
+├─sda2 ext4         rootfs_data 98d50326-db8a-4314-ba22-2d91864e3381
+└─sda3 vfat         data        8FC8-3FAD
 *
 * Remove disk utilities packages
 * UCI config fstab
