@@ -39,6 +39,7 @@ source ./opkg-install.env
 LOCAL_DOMAIN="${DOMAIN%%.*}"
 NETADDR=${IPADDR%.*}
 IPADDR_GTW=${IPADDR_GTW:-$IPADDR}
+BRIDGED_AP=${BRIDGED_AP:-0}
 
 ###############################################################################
 ### Script
