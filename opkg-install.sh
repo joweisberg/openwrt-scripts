@@ -124,7 +124,7 @@ function fInstallUsbPackages() {
     fCmd opkg install block-mount
     
     echo "* Package exFAT/ntfs"
-#    echo "* Do not install packages WPA3, SQM QoS, Acme, uHTTPd, strongswan/IKEv2, Collectd/Stats, adblock, watchcat, mSMTP!"
+#    echo "* Do not install packages WPA3, SQM QoS, Acme, uHTTPd, IKEv2/IPsec with strongSwan, Collectd/Stats, Adblock, Watchcat, mSMTP!"
     fCmd opkg install kmod-fs-exfat libblkid ntfs-3g
     echo "* Package hd-idle"
     fCmd opkg install luci-app-hd-idle
@@ -360,7 +360,7 @@ fi
 ###############################################################################
 
 H_WIFI_SSID="${H_WIFI_SSID:-AndroidAP}"
-H_WIFI_KEY="${H_WIFI_KEY:-Andr@id.}"
+H_WIFI_KEY="${H_WIFI_KEY:-android}"
 wget -q --spider --timeout=5 http://www.google.com 2> /dev/null
 if [ $? -eq 0 ]; then  # if Google website is available we update
   echo "* "
@@ -449,14 +449,16 @@ else
   read answer
 fi
 if [ -n "$(echo $answer | grep -i '^y')" ]; then
+  echo -n "* Please unplug USB storage <enter to continue>..."
+  read answer
 
   if [ -z "$(opkg list-installed | grep lsblk)" ]; then
     fInstallUsbPackages
-    echo "* Package disk utilities"
+    echo "* Install disk utilities packages"
     fCmd opkg install usbutils e2fsprogs dosfstools wipefs fdisk lsblk
   fi
 
-  echo -n "* Please plug in USB storage <enter to continue>..."
+  echo -n "* Please plug back in USB storage <enter to continue>..."
   read answer
 
   echo "* "
@@ -466,8 +468,6 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
   echo "* "
   lsblk -f /dev/sd[a-d]
   echo "* "
-  #ls -1 /dev/sd[a-d]
-  #echo "* "
   
   if [ -z "$USBDEV" ]; then
     USBDEV="/dev/sda"
@@ -500,7 +500,6 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
   uci commit fstab
   block umount > /dev/null
   
-
 
 
 
@@ -546,7 +545,6 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
         read answer
       fi
     fi
-
 
 
 
@@ -618,7 +616,6 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
       fdisk -l $USBDEV | grep  -e "^Disk" -e "^Device" -e "^\/" | grep -v "identifier"
       echo "* "
 
-
       echo "* "
       echo "* "
       echo "* "
@@ -633,25 +630,19 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
         read answer
       fi
     fi
-    
-    
-    
-    
-    
+
+
+
     # Remove temporary variables
     sed -i '/^USBREBOOT=/d' ~/opkg-install.env
     sed -i '/^USBWIPE=/d' ~/opkg-install.env
     sed -i '/^USBBUILT=/d' ~/opkg-install.env
     sed -i '/^USBDEV=/d' ~/opkg-install.env
 
-
-
-
-
     echo "* "
     echo "* Format partitions with swap/ext4/fat32"
     mkswap $DEVSWAP > /dev/null 2>&1
-    mkfs.ext4 -F -L "rootfs_data" $DEVROOT > /dev/null 2>&1
+    mkfs.ext4 -F -L "rootfs" $DEVROOT > /dev/null 2>&1
     mkfs.fat -F 32 -n "data" $DEVDATA > /dev/null 2>&1
     
     echo "* "
@@ -659,16 +650,8 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
     lsblk -f $USBDEV
     echo "* "
 
-
-
-
-
     echo "* Remove disk utilities packages"
     opkg remove --autoremove usbutils e2fsprogs dosfstools wipefs fdisk lsblk > /dev/null 2>&1
-
-
-
-
 
     echo "* "
     echo "* Add swap of ${FSRAM}MB on $DEVSWAP"
@@ -689,21 +672,17 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
 
     fMountPartitions $USBDEV
 
-    # Copy rootfs_data partition
+    # Copy rootfs partition
     echo "* Copy /overlay on $DEVROOT partition..."
-    mkdir -p /mnt/rootfs_data
-    mount -t ext4 $DEVROOT /mnt/rootfs_data > /dev/null
+    mkdir -p /mnt/rootfs
+    mount -t ext4 $DEVROOT /mnt/rootfs > /dev/null
     # Remove existing data
-    rm -Rf /mnt/rootfs_data/*
-    #tar -C /overlay -cvf - . | tar -C /mnt/rootfs_data -xf -
-    cp -a -f /overlay/. /mnt/rootfs_data
-    umount /mnt/rootfs_data
+    rm -Rf /mnt/rootfs/*
+    #tar -C /overlay -cvf - . | tar -C /mnt/rootfs -xf -
+    cp -a -f /overlay/. /mnt/rootfs
+    umount /mnt/rootfs
     block umount > /dev/null
     
-
-
-
-
     echo "* "
     echo "* "
     echo "* "
@@ -717,7 +696,6 @@ else
 
 
 
-
   echo -n "* Rebuild Rootfs on existing USB storage? [y/N] "
   read answer
   if [ -n "$(echo $answer | grep -i '^y')" ]; then
@@ -726,8 +704,8 @@ else
     
     if [ -z "$(opkg list-installed | grep lsblk)" ]; then
       fInstallUsbPackages
-      echo "* Install utilities packages"
-      fCmd opkg install lsblk
+      echo "* Install disk utilities packages"
+      fCmd opkg install usbutils e2fsprogs dosfstools wipefs fdisk lsblk
     fi
 
     echo -n "* Please plug back in USB storage <enter to continue>..."
@@ -738,8 +716,6 @@ else
     echo "* "
     lsblk -f /dev/sd[a-d]
     echo "* "
-    #ls -1 /dev/sd[a-d]*
-    #echo "* "
     
     DEVSWAP=$(block info | grep 'swap' | cut -d':' -f1)
     echo -n "* Enter swap device? <$DEVSWAP> "
@@ -747,8 +723,8 @@ else
     if [ -n "$answer" ]; then
       DEVSWAP=$answer
     fi
-    DEVROOT=$(block info | grep 'rootfs_data' | cut -d':' -f1)
-    echo -n "* Enter rootfs_data device? <$DEVROOT> "
+    DEVROOT=$(block info | grep 'rootfs' | cut -d':' -f1)
+    echo -n "* Enter rootfs device? <$DEVROOT> "
     read answer
     if [ -n "$answer" ]; then
       DEVROOT=$answer
@@ -759,27 +735,22 @@ else
     echo "* "
     echo "* Format partitions with swap/ext4"
     mkswap $DEVSWAP > /dev/null 2>&1
-    mkfs.ext4 -F -L "rootfs_data" $DEVROOT > /dev/null 2>&1
+    mkfs.ext4 -F -L "rootfs" $DEVROOT > /dev/null 2>&1
     
-    echo "* "
-    echo "* Partitions detail for $USBDEV:"
-    lsblk -f $USBDEV
-    echo "* "
-
-    echo "* Remove utilities packages"
-    opkg remove --autoremove lsblk > /dev/null 2>&1
+    echo "* Remove disk utilities packages"
+    opkg remove --autoremove usbutils e2fsprogs dosfstools wipefs fdisk lsblk > /dev/null 2>&1
 
     fMountPartitions $USBDEV
 
-    # Copy rootfs_data partition
+    # Copy rootfs partition
     echo "* Copy /overlay on $DEVROOT partition..."
-    mkdir -p /mnt/rootfs_data
-    mount -t ext4 $DEVROOT /mnt/rootfs_data > /dev/null
+    mkdir -p /mnt/rootfs
+    mount -t ext4 $DEVROOT /mnt/rootfs > /dev/null
     # Remove existing data
-    rm -Rf /mnt/rootfs_data/*
-    #tar -C /overlay -cvf - . | tar -C /mnt/rootfs_data -xf -
-    cp -a -f /overlay/. /mnt/rootfs_data
-    umount /mnt/rootfs_data
+    rm -Rf /mnt/rootfs/*
+    #tar -C /overlay -cvf - . | tar -C /mnt/rootfs -xf -
+    cp -a -f /overlay/. /mnt/rootfs
+    umount /mnt/rootfs
     block umount > /dev/null
 
     echo "* "
@@ -791,7 +762,7 @@ else
     exit 0
   fi
 fi
-rm -Rf /mnt/rootfs_data
+rm -Rf /mnt/rootfs
 
 
 
@@ -1238,7 +1209,7 @@ uci commit dhcp
 
 
 ###############################################################################
-##### Package USB-3.0, UWAN, WWAN, WPA3, SFTP, SMB, NFS, DDNS, SQM QoS, Collectd/Stats, Acme, uHTTPd, OpenVPN, strongswan/IKEv2, adblock, crontab, watchcat, mSMTP
+##### Package USB-3.0, UWAN, WWAN, WPA3, SFTP, SMB, NFS, DDNS, SQM QoS, Collectd/Stats, Acme, uHTTPd, OpenVPN, IKEv2/IPsec with strongSwan, Adblock, crontab, Watchcat, mSMTP
 ###############################################################################
 
 echo "* Checking for updates, please wait..."
