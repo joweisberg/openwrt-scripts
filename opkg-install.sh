@@ -1253,7 +1253,7 @@ uci commit fstab
 
 if [ -n "$(cat ~/opkg-install.env | grep "^MNT_DEV=")" ]; then
   echo "* UCI mount partitions"
-  # MNT_DEV="home_data|/mnt/sda1|rw,noatime"
+  # MNT_DEV="home-data|/mnt/usb|rw,noatime"
   for L in $(cat ~/opkg-install.env | grep "^MNT_DEV="); do
     # Get the value after =
     V=${L#*=}
@@ -1412,7 +1412,7 @@ if [ -n "$(cat ~/opkg-install.env | grep "^NFS_SHARE=")" ]; then
   echo "* UCI config nfs"
   # Remove existing config
   rm -f /etc/exports
-  # NFS_SHARE="/mnt/sda1|htpc"
+  # NFS_SHARE="/mnt/usb|htpc"
   for L in $(cat ~/opkg-install.env | grep "^NFS_SHARE="); do
     # Get the value after =
     V=${L#*=}
