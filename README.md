@@ -97,7 +97,7 @@ Healthcheck
   - /etc/acme/<sub.domain.com> to *keep current Acme certificates*
   - /et/easy-rsa/pki to *keep current OpenVPN certificates*
 2. Add this [repository](https://github.com/joweisberg/openwrt-scripts) files under /root folder on your .tar.gz backup file
-3. **Create** your own **/root/opkg-install.env** file based the [example](https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/opkg-install.env-example) and add it on your .tar.gz backup file (optional, can be done by script)
+3. **Create** your own **/root/opkg-install.env** file based the [example](opkg-install.env-example) and add it on your .tar.gz backup file (optional, can be done by script)
 4. **Flash new firmware image** and **Restore** with your new .tar.gz backup file
 5. Open ssh terminal to connect to OpenWrt
 ```bash
@@ -120,7 +120,7 @@ $ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 3. Start OpenWrt setup installation
 
 ### Script setup variables
-[opkg-install.env-readme](https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/opkg-install.env-readme)
+[opkg-install.env-readme](opkg-install.env-readme)
 
 ### USB default partitions architecture
 | Device | Type | Label | Default size |
@@ -135,25 +135,25 @@ $ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 ### Screenshots
 
 - Wireless Overview
-<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/Wireless Overview.png" height="50px">
+<br/><img src=".img/Wireless Overview.png" height="50px">
 - Interfaces
-<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/Interfaces.png" height="50px">
+<br/><img src=".img/Interfaces.png" height="50px">
 - Firewall
-<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/Firewall-1.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/Firewall-2.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/Firewall-3.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/Firewall-4.png" height="50px">
+<br/><img src=".img/Firewall-1.png" height="50px"> <img src=".img/Firewall-2.png" height="50px"> <img src=".img/Firewall-3.png" height="50px"> <img src=".img/Firewall-4.png" height="50px">
 - Network Shares
-<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/Network Shares.png" height="50px">
+<br/><img src=".img/Network Shares.png" height="50px">
 - Scheduled Tasks
-<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/Scheduled Tasks.png" height="50px">
+<br/><img src=".img/Scheduled Tasks.png" height="50px">
 - Smart Queue Management
-<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/Smart Queue Management-1.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/Smart Queue Management-2.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/Smart Queue Management-3.png" height="50px">
+<br/><img src=".img/Smart Queue Management-1.png" height="50px"> <img src=".img/Smart Queue Management-2.png" height="50px"> <img src=".img/Smart Queue Management-3.png" height="50px">
 - Adblock
-<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/Adblock.png" height="50px">
+<br/><img src=".img/Adblock.png" height="50px">
 - OpenVPN instances
-<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/OpenVPN instances.png" height="50px">
+<br/><img src=".img/OpenVPN instances.png" height="50px">
   - OpenVPN Server
-<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/OpenVPN Server-1.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/OpenVPN Server-2.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/OpenVPN Server-3.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/OpenVPN Server-4.png" height="50px">
+<br/><img src=".img/OpenVPN Server-1.png" height="50px"> <img src=".img/OpenVPN Server-2.png" height="50px"> <img src=".img/OpenVPN Server-3.png" height="50px"> <img src=".img/OpenVPN Server-4.png" height="50px">
   - OpenVPN Server Site-to-Site (s2s)
-<br/><img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/OpenVPN Server_s2s-1.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/OpenVPN Server_s2s-2.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/OpenVPN Server_s2s-3.png" height="50px"> <img src="https://raw.githubusercontent.com/joweisberg/openwrt-scripts/main/.img/OpenVPN Server_s2s-4.png" height="50px">
+<br/><img src=".img/OpenVPN Server_s2s-1.png" height="50px"> <img src=".img/OpenVPN Server_s2s-2.png" height="50px"> <img src=".img/OpenVPN Server_s2s-3.png" height="50px"> <img src=".img/OpenVPN Server_s2s-4.png" height="50px">
 
 ---
 
