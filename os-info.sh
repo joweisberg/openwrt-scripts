@@ -180,7 +180,8 @@ echo "$(echored " IPv4 outside: ")$ETH_GTW [$(uci get ddns.myddns_ipv4.lookup_ho
 echo "$(echored " Devices connected: ")"
 # Get all mac address from dhcp leases
 interface="br-lan"
-cat /tmp/dhcp.leases | awk '{print toupper($2)}' | sed "s/^/$interface /g"  > /tmp/mac-lan.list
+# Sort dhcp leases by IP address and get all mac address
+cat /tmp/dhcp.leases | sort -t . -k 4n | awk '{print toupper($2)}' | sed "s/^/$interface /g"  > /tmp/mac-lan.list
 # for each interface, count wireless devices
 rm -f /tmp/mac-wlan.list
 wifidevice=0
@@ -190,12 +191,12 @@ for interface in $(iwinfo | awk '/ESSID/{print $1}'); do
   iwinfo $interface assoclist | awk '/dBm/{print toupper($1)}' | sed "s/^/$interface /g" >> /tmp/mac-wlan.list
 done
 # Remove from dhcp leases mac address from wlan devices
-for mac in $(cat /tmp/mac-wlan.list); do
+for mac in $(cat /tmp/mac-wlan.list | awk '{print $2}'); do
   sed -i "/$mac/d" /tmp/mac-lan.list
 done
 # Sort mac address as uniq list
-cat /tmp/mac-lan.list | sort -f | uniq -i > /tmp/mac-lan.list.tmp
-mv /tmp/mac-lan.list.tmp /tmp/mac-lan.list
+#cat /tmp/mac-lan.list | sort -f | uniq -i > /tmp/mac-lan.list.tmp
+#mv /tmp/mac-lan.list.tmp /tmp/mac-lan.list
 
 # for lan interface, count devices
 interface="br-lan"
