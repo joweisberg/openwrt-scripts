@@ -179,22 +179,24 @@ echo "$(echored " IPv4 network: ")$ETH_ADR $ETH_DNS [$ETH_DEV]"
 echo "$(echored " IPv4 outside: ")$ETH_GTW [$(uci get ddns.myddns_ipv4.lookup_host)]"
 echo "$(echored " Devices connected: ")"
 # Get all mac address from dhcp leases
-cat /tmp/dhcp.leases | awk '{print toupper($2)}' > /tmp/mac-lan.list
+interface="br-lan"
+# Sort dhcp leases by IP address and get all mac address
+cat /tmp/dhcp.leases | sort -t . -k 4n | awk '{print toupper($2)}' | sed "s/^/$interface /g"  > /tmp/mac-lan.list
 # for each interface, count wireless devices
 rm -f /tmp/mac-wlan.list
 wifidevice=0
 for interface in $(iwinfo | awk '/ESSID/{print $1}'); do
   wifidevice=$(( $wifidevice + $(iwinfo $interface assoclist | grep dBm | wc -l) ))
   # Add mac address from wlan devices
-  iwinfo $interface assoclist | awk '/dBm/{print toupper($1)}' >> /tmp/mac-wlan.list
+  iwinfo $interface assoclist | awk '/dBm/{print toupper($1)}' | sed "s/^/$interface /g" >> /tmp/mac-wlan.list
 done
 # Remove from dhcp leases mac address from wlan devices
-for mac in $(cat /tmp/mac-wlan.list); do
+for mac in $(cat /tmp/mac-wlan.list | awk '{print $2}'); do
   sed -i "/$mac/d" /tmp/mac-lan.list
 done
 # Sort mac address as uniq list
-cat /tmp/mac-lan.list | sort -f | uniq -i > /tmp/mac-lan.list.tmp
-mv /tmp/mac-lan.list.tmp /tmp/mac-lan.list
+#cat /tmp/mac-lan.list | sort -f | uniq -i > /tmp/mac-lan.list.tmp
+#mv /tmp/mac-lan.list.tmp /tmp/mac-lan.list
 
 # for lan interface, count devices
 interface="br-lan"
@@ -210,9 +212,10 @@ done
 echo
 echo "NETWORK DEVICES"
 printf ' %-7s %-9s %-17s %-15s %s [%s]\n' "# Int." "[Exp.]" "MAC address" "IP address" "Name" "Vendor"
-# Get connected devices on lan network with expired dhpc leases
-for mac in $(cat /tmp/mac-lan.list); do
-  interface="br-lan"
+# Get connected devices on lan and wireless network with expired dhpc leases
+for L in $(cat /tmp/mac-lan.list /tmp/mac-wlan.list); do
+  interface="$(echo $L | awk '{print $1}')"
+  mac="$(echo $L | awk '{print $2}')"
   # Leasetime remaining => [06h 57m]
   leasetime="[$(date -d @$(($(cat /tmp/dhcp.leases | grep -i "$mac" | awk '{print $1}') - $(date +"%s"))) +"%Hh %Mm")]"
   # Find ip in dhpc dynamic leases
@@ -244,47 +247,6 @@ for mac in $(cat /tmp/mac-lan.list); do
 
   # br-lan [08h 53m] 70:fc:8f:73:b7:90 192.168.10.254 fbx-player [FREEBOX SAS]
   printf ' %-7s %-9s %-17s %-15s %s [%s]\n' "$interface" "$leasetime" "$mac" "$ip" "$host" "$vendor" | sed "s/[!!]/$(echoyellow "!!")/g"
-done
-# Get connected devices on wireless with expired dhpc leases
-for interface in $(iwinfo | awk '/ESSID/{print $1}'); do
-  type=$(iwinfo $interface info | awk '/Type/{print $5}')
-  channel=$(iwinfo $interface info | awk '/Master  Channel/{print $4}')
-  essid=$(iwinfo $interface info | awk -F'"' '/ESSID/{print $2}')
-
-  # for each interface, get mac addresses of connected stations/clients
-  for mac in $(iwinfo $interface assoclist | grep dBm | cut -d' ' -f1); do
-    # Leasetime remaining => [06h 57m]
-    leasetime="[$(date -d @$(($(cat /tmp/dhcp.leases | grep -i "$mac" | awk '{print $1}') - $(date +"%s"))) +"%Hh %Mm")]"
-    # Find ip in dhpc dynamic leases
-    ip=$(cat /tmp/dhcp.leases | grep -i $mac | cut -d' ' -f3)
-    # Find ip in dhpc static lease
-    if [ -z "$ip" ]; then
-      # dhcp.@host[2].mac='DE:0D:17:C0:51:9F'
-      dhcpmac=$(uci show dhcp | grep -i ".mac='$mac'" | cut -d'=' -f1)
-      # dhcp.@host[2].mac
-      # uci get dhcp.@host[2].ip
-      ip="$(uci -q get ${dhcpmac%.*}.ip)"
-    fi
-    if [ -z "$ip" ]; then
-      ip="UKWN"
-    fi
-    host=$(cat /tmp/dhcp.leases | cut -d' ' -f 2,3,4 | grep -i $mac | cut -d' ' -f3)
-    # Find host name in dhpc static lease
-    if [ -z "$host" ]; then
-      # dhcp.@host[2].mac='DE:0D:17:C0:51:9F'
-      dhcpmac=$(uci show dhcp | grep -i ".mac='$mac'" | cut -d'=' -f1)
-      # dhcp.@host[2].mac
-      # uci get dhcp.@host[2].name
-      host="$(uci -q get ${dhcpmac%.*}.name)"
-    fi
-    if [ -z "$host" ]; then
-      host="*"
-    fi
-    vendor=$(sleep 1 && curl --silent https://api.maclookup.app/v2/macs/$mac | cut -d',' -f4 | cut -d'"' -f4)
-
-    # br-lan [08h 53m] 70:fc:8f:73:b7:90 192.168.10.254 fbx-player [FREEBOX SAS]
-    printf ' %-7s %-9s %-17s %-15s %s [%s]\n' "$interface" "$leasetime" "$mac" "$ip" "$host" "$vendor" | sed "s/!!/$(echoyellow "!!")/g"
-  done
 done
 
 if [ $(ipsec leases | sed 1d | grep online | wc -l) -gt 0 ]; then
