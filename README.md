@@ -127,7 +127,7 @@ $ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 | --- | --- | --- | --- |
 | sda |
 | ├─sda1 | swap | | 2 x existing RAM with max of 512Mb |
-| ├─sda2 | ext4 | rootfs_data | 4Go |
+| ├─sda2 | ext4 | rootfs | 4Go |
 | └─sda3 | vfat | data | 10Go --> mount point /mnt/data |
 
 ---
@@ -225,7 +225,7 @@ Device     Boot   Start      End  Sectors  Size Id Type
 NAME   FSTYPE FSVER LABEL       UUID                                 FSAVAIL FSUSE% MOUNTPOINT
 sda
 ├─sda1 swap
-├─sda2 ext4         rootfs_data 98d50326-db8a-4314-ba22-2d91864e3381
+├─sda2 ext4         rootfs      98d50326-db8a-4314-ba22-2d91864e3381
 └─sda3 vfat         data        8FC8-3FAD
 *
 * Remove disk utilities packages
@@ -269,20 +269,13 @@ sda
 *
 NAME   FSTYPE LABEL       UUID                                 FSAVAIL FSUSE% MOUNTPOINT
 ├─sda1 swap
-├─sda2 ext4         rootfs_data 98d50326-db8a-4314-ba22-2d91864e3381
+├─sda2 ext4         rootfs      98d50326-db8a-4314-ba22-2d91864e3381
 └─sda3 vfat         data        8FC8-3FAD
 *
 * Enter swap device? </dev/sda1>
-* Enter rootfs_data device? </dev/sda2>
+* Enter rootfs device? </dev/sda2>
 *
 * Format partitions with swap/ext4
-*
-* Partitions detail for /dev/sda:
-NAME   FSTYPE LABEL       UUID                                 FSAVAIL FSUSE% MOUNTPOINT
-├─sda1 swap
-├─sda2 ext4         rootfs_data 98d50326-db8a-4314-ba22-2d91864e3381
-└─sda3 vfat         data        8FC8-3FAD
-*
 * Remove disk utilities packages
 * UCI config fstab
 * Enable all mounted partitions

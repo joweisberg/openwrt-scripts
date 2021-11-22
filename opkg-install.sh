@@ -503,7 +503,6 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
 
 
 
-
   if [ $USBREBOOT -eq 1 ]; then
     echo "* Built-in USB device for $USBDEV"
     answer="y"
@@ -546,7 +545,6 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
         read answer
       fi
     fi
-
 
 
 
@@ -618,7 +616,6 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
       fdisk -l $USBDEV | grep  -e "^Disk" -e "^Device" -e "^\/" | grep -v "identifier"
       echo "* "
 
-
       echo "* "
       echo "* "
       echo "* "
@@ -633,25 +630,19 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
         read answer
       fi
     fi
-    
-    
-    
-    
-    
+
+
+
     # Remove temporary variables
     sed -i '/^USBREBOOT=/d' ~/opkg-install.env
     sed -i '/^USBWIPE=/d' ~/opkg-install.env
     sed -i '/^USBBUILT=/d' ~/opkg-install.env
     sed -i '/^USBDEV=/d' ~/opkg-install.env
 
-
-
-
-
     echo "* "
     echo "* Format partitions with swap/ext4/fat32"
     mkswap $DEVSWAP > /dev/null 2>&1
-    mkfs.ext4 -F -L "rootfs_data" $DEVROOT > /dev/null 2>&1
+    mkfs.ext4 -F -L "rootfs" $DEVROOT > /dev/null 2>&1
     mkfs.fat -F 32 -n "data" $DEVDATA > /dev/null 2>&1
     
     echo "* "
@@ -659,16 +650,8 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
     lsblk -f $USBDEV
     echo "* "
 
-
-
-
-
     echo "* Remove disk utilities packages"
     opkg remove --autoremove usbutils e2fsprogs dosfstools wipefs fdisk lsblk > /dev/null 2>&1
-
-
-
-
 
     echo "* "
     echo "* Add swap of ${FSRAM}MB on $DEVSWAP"
@@ -689,21 +672,17 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
 
     fMountPartitions $USBDEV
 
-    # Copy rootfs_data partition
+    # Copy rootfs partition
     echo "* Copy /overlay on $DEVROOT partition..."
-    mkdir -p /mnt/rootfs_data
-    mount -t ext4 $DEVROOT /mnt/rootfs_data > /dev/null
+    mkdir -p /mnt/rootfs
+    mount -t ext4 $DEVROOT /mnt/rootfs > /dev/null
     # Remove existing data
-    rm -Rf /mnt/rootfs_data/*
-    #tar -C /overlay -cvf - . | tar -C /mnt/rootfs_data -xf -
-    cp -a -f /overlay/. /mnt/rootfs_data
-    umount /mnt/rootfs_data
+    rm -Rf /mnt/rootfs/*
+    #tar -C /overlay -cvf - . | tar -C /mnt/rootfs -xf -
+    cp -a -f /overlay/. /mnt/rootfs
+    umount /mnt/rootfs
     block umount > /dev/null
     
-
-
-
-
     echo "* "
     echo "* "
     echo "* "
@@ -713,7 +692,6 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
     exit 0
   fi
 else
-
 
 
 
@@ -745,8 +723,8 @@ else
     if [ -n "$answer" ]; then
       DEVSWAP=$answer
     fi
-    DEVROOT=$(block info | grep 'rootfs_data' | cut -d':' -f1)
-    echo -n "* Enter rootfs_data device? <$DEVROOT> "
+    DEVROOT=$(block info | grep 'rootfs' | cut -d':' -f1)
+    echo -n "* Enter rootfs device? <$DEVROOT> "
     read answer
     if [ -n "$answer" ]; then
       DEVROOT=$answer
@@ -757,27 +735,22 @@ else
     echo "* "
     echo "* Format partitions with swap/ext4"
     mkswap $DEVSWAP > /dev/null 2>&1
-    mkfs.ext4 -F -L "rootfs_data" $DEVROOT > /dev/null 2>&1
+    mkfs.ext4 -F -L "rootfs" $DEVROOT > /dev/null 2>&1
     
-    echo "* "
-    echo "* Partitions detail for $USBDEV:"
-    lsblk -f $USBDEV
-    echo "* "
-
     echo "* Remove disk utilities packages"
     opkg remove --autoremove usbutils e2fsprogs dosfstools wipefs fdisk lsblk > /dev/null 2>&1
 
     fMountPartitions $USBDEV
 
-    # Copy rootfs_data partition
+    # Copy rootfs partition
     echo "* Copy /overlay on $DEVROOT partition..."
-    mkdir -p /mnt/rootfs_data
-    mount -t ext4 $DEVROOT /mnt/rootfs_data > /dev/null
+    mkdir -p /mnt/rootfs
+    mount -t ext4 $DEVROOT /mnt/rootfs > /dev/null
     # Remove existing data
-    rm -Rf /mnt/rootfs_data/*
-    #tar -C /overlay -cvf - . | tar -C /mnt/rootfs_data -xf -
-    cp -a -f /overlay/. /mnt/rootfs_data
-    umount /mnt/rootfs_data
+    rm -Rf /mnt/rootfs/*
+    #tar -C /overlay -cvf - . | tar -C /mnt/rootfs -xf -
+    cp -a -f /overlay/. /mnt/rootfs
+    umount /mnt/rootfs
     block umount > /dev/null
 
     echo "* "
@@ -789,7 +762,7 @@ else
     exit 0
   fi
 fi
-rm -Rf /mnt/rootfs_data
+rm -Rf /mnt/rootfs
 
 
 
@@ -1145,6 +1118,7 @@ uci set wireless.radio0.compression='1'
 uci set wireless.radio0.turbo='1'
 uci set wireless.radio0.channel='auto'
 uci set wireless.radio0.channels='116 120 124 128 132'
+uci set wireless.radio0.cell_density='0'
 uci set wireless.radio0.disabled='0'
 uci set wireless.default_radio0.mode='ap'
 uci set wireless.default_radio0.ssid="$WIFI_SSID"
@@ -1160,6 +1134,7 @@ uci set wireless.radio1.ff='1'
 uci set wireless.radio1.compression='1'
 uci set wireless.radio1.turbo='1'
 uci set wireless.radio1.channel='auto'
+uci set wireless.radio1.cell_density='0'
 uci set wireless.radio1.disabled='0'
 uci set wireless.default_radio1.mode='ap'
 uci set wireless.default_radio1.ssid="$WIFI_SSID"
