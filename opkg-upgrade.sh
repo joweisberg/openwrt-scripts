@@ -16,10 +16,22 @@ FILE_NAME=$(basename $0)                #opkg-upgrade.sh
 FILE_NAME=${FILE_NAME%.*}               #opkg-upgrade
 FILE_DATE=$(date +'%Y%m%d-%H%M%S')
 FILE_LOG="/var/log/$FILE_NAME.log"
-FILE_LOG_ERRORS="/var/log/$FILE_NAME-errors.log"
+FILE_LOG_ERRORS="/var/log/$FILE_NAME.err"
 
 ###############################################################################
 ### Functions
+
+function fCmd() {
+  local cmd=$@
+  $cmd 2>&1 1> /dev/null | tee -a $FILE_LOG_ERRORS
+  if [ $? -ne 0 ]; then
+    echo "* " | tee -a $FILE_LOG
+    echo "* $cmd" | xargs | tee -a $FILE_LOG
+    opkgStatus="Upgrade ending with errors!"
+    fSendMail "$opkgStatus\nOS: $OPENWRT_RELEASE" "$(cat $FILE_LOG | grep -Ev "^Downloading|^Configuring|resolve_conffiles|^\.|^$")"
+    exit 1
+  fi
+}
 
 function fSendMail() {
   local MSG_HEAD=$1 MSG_BODY=$2
@@ -58,7 +70,7 @@ free > /dev/null 2>&1 && sync && echo 3 > /proc/sys/vm/drop_caches
 rm -Rf /var/opkg-lists/*
 echo "* " | tee -a $FILE_LOG
 echo "* Checking for updates, please wait..." | tee -a $FILE_LOG
-opkg update > /dev/null
+fCmd opkg update
 
 opkgStatus=""
 opkgDowngradeOn=0
