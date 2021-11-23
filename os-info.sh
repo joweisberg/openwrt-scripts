@@ -289,7 +289,7 @@ if [ $(expr $OPVPN_UP - $OPVPN_DN) -gt 0 ]; then
   cat /var/log/openvpn.log | grep 'client/' | grep 'IPv4=' | awk '{print "    "$3" "$7}' | sed 's/,$//g' 2> /dev/null > /tmp/openvpn-users.log
   # Add username
   #      client/92.184.116.249:46047 IPv4=10.10.1.2 'Jonathan'
-  cat /var/log/openvpn.log | grep 'Username/Password authentication succeeded' | while read line; do ip=$(echo "$line" | awk '{print $3}'); login=$(echo "$line" | awk -F"'" '{print $2}'); sed -i "/$ip/ s/$/ \t'$login'/" /tmp/openvpn-users.log; done
+  cat /var/log/openvpn.log | grep 'Username/Password authentication succeeded' | while read line; do ip=$(echo "$line" | awk '{print $3}'); login=$(echo "$line" | awk -F"'" '{print $2}'); sed -i "/$ip/ s/$/ \t'$login'/" /tmp/openvpn-users.log 2> /dev/null; done
   echo "$(cat /var/log/openvpn.log | grep 'client/' | grep SIGTERM | awk '{print $3}' | awk -F'/' '{print $2}')" | while read line; do [ -n "$line" ] && sed -i "/$line/d" /tmp/openvpn-users.log; done
   cat /tmp/openvpn-users.log
   rm -f /tmp/openvpn-users.log
