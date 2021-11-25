@@ -1539,7 +1539,7 @@ fCmd opkg install luci-ssl-openssl curl ca-bundle
 echo "* Install ACME script"
 curl -sS https://raw.githubusercontent.com/Neilpang/acme.sh/master/acme.sh > /etc/acme/acme.sh
 chmod a+x /etc/acme/acme.sh
-/etc/acme/acme.sh --home /etc/acme --install --accountemail "jo.weisberg@gmail.com"
+/etc/acme/acme.sh --home /etc/acme --install --accountemail "myusername@gmail.com"
 /etc/acme/acme.sh --home /etc/acme --upgrade --auto-upgrade
 echo '/etc/acme #ACME certificates and scripts' >> /etc/sysupgrade.conf
 
@@ -1547,7 +1547,7 @@ echo "* Package Acme UI"
 fCmd opkg install luci-app-acme
 echo "* UCI config acme"
 uci set acme.@acme[0].state_dir='/etc/acme'
-uci set acme.@acme[0].account_email='jo.weisberg@gmail.com'
+uci set acme.@acme[0].account_email='myusername@gmail.com'
 uci set acme.@acme[0].debug='0'
 uci -q del acme.example
 uci set acme.local=cert
@@ -1699,14 +1699,14 @@ tls on
 tls_starttls on
 from no-reply@gmail.com
 auth on
-user jo.weisberg
-password J@hn2711.
+user myusername
+password mypassword
 
 # Set a default account
 account default : gmail
 EOF
 cat << EOF > /etc/msmtp.aliases
-root: jo.weisberg@gmail.com
+root: myusername@gmail.com
 EOF
 chmod 644 /etc/msmtprc
 echo '/etc/msmtprc* #mSMTP mail config' >> /etc/sysupgrade.conf
@@ -1714,7 +1714,7 @@ echo '/etc/msmtprc* #mSMTP mail config' >> /etc/sysupgrade.conf
 # echo "Hello this is sending email using mSMTP" | msmtp $(id -un)
 # echo -e "Subject: Test mSMTP\n\nHello this is sending email using mSMTP" | msmtp $(id -un)
 # echo -e "Subject: Power outage @ $(date)\n\n$(upsc el650usb)" | msmtp -a gmail $(id -un)
-# echo -e "From: Pretty Name\r\nSubject: Example subject\r\nContent goes here." | msmtp --debug jo.weisberg@gmail.com
+# echo -e "From: Pretty Name\r\nSubject: Example subject\r\nContent goes here." | msmtp --debug myusername@gmail.com
 # Error:
 # Allow access to unsecure apps
 # https://myaccount.google.com/lesssecureapps
