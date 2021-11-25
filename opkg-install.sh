@@ -1554,7 +1554,7 @@ echo "* Package Acme UI"
 fCmd opkg install luci-app-acme
 echo "* UCI config acme"
 uci set acme.@acme[0].state_dir='/etc/acme'
-uci set acme.@acme[0].account_email='jo.weisberg@gmail.com'
+uci set acme.@acme[0].account_email='myusername@gmail.com'
 uci set acme.@acme[0].debug='0'
 uci -q del acme.example
 uci set acme.local=cert
@@ -1706,8 +1706,8 @@ tls on
 tls_starttls on
 from no-reply@gmail.com
 auth on
-user jo.weisberg
-password J@hn2711.
+user myusername
+password mypassword
 
 # Set a default account
 account default : gmail
