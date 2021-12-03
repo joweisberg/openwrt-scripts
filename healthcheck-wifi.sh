@@ -48,7 +48,7 @@ if [ ! -f /tmp/healthcheck-wifi.dev ]; then
 fi
 
 # Clean previous old files
-[ -f ./healthcheck-wifi.reboot ] && [ "$(cat ./healthcheck-wifi.reboot)" != "$(date +'%Y%m%d')" ] && rm -f ./healthcheck-wifi.reboot && rm -f ./healthcheck-wifi.mail
+[ -f ./healthcheck.reboot ] && [ "$(cat ./healthcheck.reboot)" != "$(date +'%Y%m%d')" ] && rm -f ./healthcheck.reboot && rm -f ./healthcheck-wifi.mail
 
 ###############################################################################
 ### Script
@@ -106,7 +106,7 @@ for DEV in $(echo $CHECK_DEV | tr "|" "\n"); do
 done
 
 # Send a mail if no error detected after a reboot
-[ $DEV_UPDATED -eq 0 ] && [ -f ./healthcheck-wifi.reboot ] && [ "$(cat ./healthcheck-wifi.reboot)" == "$(date +'%Y%m%d')" ] && [ ! -f ./healthcheck-wifi.mail ] && echo "$(date +'%Y%m%d')" > ./healthcheck-wifi.mail && fSendMail "WiFi device(s) are up and running." "$(cat /tmp/healthcheck-wifi.dev | awk -F'|' '{print $1" => Channel: "$3}' ORS='\n')"
+[ $DEV_UPDATED -eq 0 ] && [ -f ./healthcheck.reboot ] && [ "$(cat ./healthcheck.reboot)" == "$(date +'%Y%m%d')" ] && [ ! -f ./healthcheck-wifi.mail ] && echo "$(date +'%Y%m%d')" > ./healthcheck-wifi.mail && fSendMail "WiFi device(s) are up and running." "$(cat /tmp/healthcheck-wifi.dev | awk -F'|' '{print $1" => Channel: "$3}' ORS='\n')"
 
 # Check all devices when changes are detected
 if [ $DEV_UPDATED -eq 1 ]; then
@@ -115,9 +115,9 @@ if [ $DEV_UPDATED -eq 1 ]; then
   if [ $(cat /tmp/healthcheck-wifi.dev | grep "FAILED" | wc -l) -gt 0 ]; then
   
     # Try to reboot only one time per day to solve the issue
-    if [ ! -f ./healthcheck-wifi.reboot ] || [ "$(cat ./healthcheck-wifi.reboot)" != "$(date +'%Y%m%d')" ]; then
+    if [ ! -f ./healthcheck.reboot ] || [ "$(cat ./healthcheck.reboot)" != "$(date +'%Y%m%d')" ]; then
       echo "[$(date +'%Y-%m-%d %H:%M:%S')] WiFi device(s) are down, rebooting..." | tee -a $FILE_LOG
-      echo "$(date +'%Y%m%d')" > ./healthcheck-wifi.reboot
+      echo "$(date +'%Y%m%d')" > ./healthcheck.reboot
       fSendMail "WiFi device(s) are down!" "$(cat /tmp/healthcheck-wifi.dev | awk -F'|' '{print $1" => Channel: "$3}' ORS='\n')\n\nKernel Log:\n$(dmesg | head -n20)\n\nRebooting..."
       reboot
       exit 1
@@ -125,7 +125,7 @@ if [ $DEV_UPDATED -eq 1 ]; then
     fSendMail "WiFi device(s) are down!" "$(cat /tmp/healthcheck-wifi.dev | awk -F'|' '{print $1" => Channel: "$3}' ORS='\n')\n\nKernel Log:\n$(dmesg | head -n20)"
     
   else
-    [ -f ./healthcheck-wifi.reboot ] && [ "$(cat ./healthcheck-wifi.reboot)" != "$(date +'%Y%m%d')" ] && rm -f ./healthcheck-wifi.reboot
+    [ -f ./healthcheck.reboot ] && [ "$(cat ./healthcheck.reboot)" != "$(date +'%Y%m%d')" ] && rm -f ./healthcheck.reboot
     fSendMail "WiFi device(s) are up and running." "$(cat /tmp/healthcheck-wifi.dev | awk -F'|' '{print $1" => Channel: "$3}' ORS='\n')"
   fi
 fi
