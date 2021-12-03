@@ -48,13 +48,13 @@ if [ ! -f /tmp/healthcheck-nas.dev ]; then
   sed -i 's/$/|PASSED/' /tmp/healthcheck-nas.dev
 fi
 
-# Force initialization after unattended reboot when uptime < 5 min
+# Force initialization after unattended reboot when uptime < 3 min
 #UPTIME="3d 6h 56m"
 UPTIME=$(uptime | awk -F'( |,|:)+' '{d=h=m=0; if ($7=="min") m=$6; else {if ($7~/^day/) {d=$6;h=$8;m=$9} else {h=$6;m=$7}}} {print d+0"d",h+0"h",m+0"m"}')
 UPTIME_D=$(echo $UPTIME | awk '{print $1}' | sed 's/d//g')
 UPTIME_H=$(echo $UPTIME | awk '{print $2}' | sed 's/h//g')
 UPTIME_M=$(echo $UPTIME | awk '{print $3}' | sed 's/m//g')
-[ -f ./healthcheck-wifi.reboot ] && [ $UPTIME_D -eq 0 ] && [ $UPTIME_H -eq 0 ] && [ $UPTIME_M -lt 5 ] && /root/fw-redirect.sh Allow-http=off Allow-https=off Allow-NAS-http=on Allow-NAS-https=on
+[ -f ./healthcheck.reboot ] && [ $UPTIME_D -eq 0 ] && [ $UPTIME_H -eq 0 ] && [ $UPTIME_M -lt 3 ] && /root/fw-redirect.sh Allow-http=off Allow-https=off Allow-NAS-http=on Allow-NAS-https=on
 
 ###############################################################################
 ### Script
