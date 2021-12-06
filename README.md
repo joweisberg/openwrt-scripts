@@ -97,7 +97,7 @@ Healthcheck
   - /etc/acme/<sub.domain.com> to *keep current Acme certificates*
   - /et/easy-rsa/pki to *keep current OpenVPN certificates*
 2. Add this [repository](https://github.com/joweisberg/openwrt-scripts) files under /root folder on your .tar.gz backup file
-3. **Create** your own **/root/opkg-install.env** file based the [example](opkg-install.env-example) and add it on your .tar.gz backup file (optional, can be done by script)
+3. **Create** your own **/root/.env** file based the [example](.env-example) and add it on your .tar.gz backup file (optional, can be done by script)
 4. **Flash new firmware image** and **Restore** with your new .tar.gz backup file
 5. Open ssh terminal to connect to OpenWrt
 ```bash
@@ -120,7 +120,7 @@ $ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 3. Start OpenWrt setup installation
 
 ### Script setup variables
-[opkg-install.env-readme](opkg-install.env-readme)
+[.env-readme](.env-readme)
 
 ### USB default partitions architecture
 | Device | Type | Label | Default size |

@@ -33,9 +33,10 @@ function fCmd() {
 SAVEIFS=$IFS
 IFS=$'\n'
 
-# Source environment variables
-cd $FILE_PATH
-source ./opkg-install.env
+# Source under this script directory
+cd $(readlink -f $(dirname $0))
+source ./.env
+
 LOCAL_DOMAIN="${DOMAIN%%.*}"
 NETADDR=${IPADDR%.*}
 IPADDR_GTW=${IPADDR_GTW:-$IPADDR}
@@ -92,7 +93,7 @@ ln -sf $EASYRSA_PKI/private/client.key $OVPN_KEYS/client.key
 # Add automatically vpn user
 rm -f /etc/openvpn/authpass.txt
 # VPN_USER="username|password"
-for L in $(cat ./opkg-install.env | grep "^VPN_USER="); do
+for L in $(cat .env | grep "^VPN_USER="); do
   # Get the value after =
   V=${L#*=}
   # Evaluate variable inside the line
@@ -284,7 +285,7 @@ uci commit firewall
 
 
 
-if [ -n "$(cat ./opkg-install.env | grep "^VPN_CLIENT=")" ]; then
+if [ -n "$(cat .env | grep "^VPN_CLIENT=")" ]; then
 
   echo "* Set OpenVPN server Site-to-Site config"
 
@@ -319,7 +320,7 @@ if [ -n "$(cat ./opkg-install.env | grep "^VPN_CLIENT=")" ]; then
   uci set openvpn.server_s2s.client_config_dir='/etc/openvpn/ccd'
   uci -q del openvpn.server_s2s.route
   # VPN_CLIENT="username|network|local_domain|dns_server"
-  for L in $(cat ./opkg-install.env | grep "^VPN_CLIENT="); do
+  for L in $(cat .env | grep "^VPN_CLIENT="); do
     # Get the value after =
     V=${L#*=}
     # Evaluate variable inside the line
@@ -425,12 +426,12 @@ fi
 
 
 # Add custom OpenVPN Client Site config files
-if [ -n "$(cat ./opkg-install.env | grep "^VPN_SITE=")" ] && [ $BRIDGED_AP -eq 0 ]; then
+if [ -n "$(cat .env | grep "^VPN_SITE=")" ] && [ $BRIDGED_AP -eq 0 ]; then
 
   echo "* Set OpenVPN Client Site config"
 
   # VPN_SITE="https://ejw.root.sx/openvpn/jdwt.root.sx.ovpn|username|password"
-  for L in $(cat ./opkg-install.env | grep "^VPN_SITE="); do
+  for L in $(cat .env | grep "^VPN_SITE="); do
     # Get the value after =
     V=${L#*=}
     # Evaluate variable inside the line
@@ -574,7 +575,7 @@ case $script_type in
       #env
 
       # VPN_CLIENT="username|network|local_domain|dns_server"
-      for L in $(cat /root/opkg-install.env | grep "^VPN_CLIENT="); do
+      for L in $(cat /root/.env | grep "^VPN_CLIENT="); do
         # Get the value after =
         V=${L#*=}
         # Evaluate variable inside the line
@@ -590,7 +591,7 @@ case $script_type in
         OPT_DOM=$CL_DOMAIN
         OPT_DNS=$CL_DNS
         
-        fLog "Use DNS and domain provided by /root/opkg-install.env /$OPT_DOM/$OPT_DNS"
+        fLog "Use DNS and domain provided by /root/.env /$OPT_DOM/$OPT_DNS"
         # uci add_list dhcp.@dnsmasq[0].rebind_domain='ejw'
         # uci add_list dhcp.@dnsmasq[0].server="/ejw/192.168.10.1"
         uci add_list dhcp.@dnsmasq[0].rebind_domain="$OPT_DOM"
