@@ -1627,8 +1627,8 @@ EOF
 echo "* Enable crontab 'Scheduled Taks'"
 /etc/init.d/cron enable
 cat << 'EOF' > /etc/crontabs/root
-# Backup config file every 1st of the month @05:50
-50 5 1 * * source /etc/os-release && rm -f /mnt/data/backup-$VERSION-$HOSTNAME* && sysupgrade -b /mnt/data/backup-$VERSION-$HOSTNAME.$(uci get dhcp.@dnsmasq[0].domain)-$(date +%F).tar.gz
+# Backup config file every Friday @05:50
+50 5 0 * 5 source /etc/os-release && rm -f /mnt/data/backup-$VERSION-$HOSTNAME* && sysupgrade -b /mnt/data/backup-$VERSION-$HOSTNAME.$(uci get dhcp.@dnsmasq[0].domain)-$(date +%F).tar.gz
 # Packages upgrade daily @05:55
 55 5 * * * /root/opkg-upgrade.sh
 # Update ip addresses list that track attacks, spyware, viruses daily @03:00
