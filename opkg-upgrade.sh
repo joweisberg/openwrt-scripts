@@ -42,13 +42,10 @@ function fSendMail() {
 ###############################################################################
 ### Environment Variables
 
+# Source under this script directory
+cd $(readlink -f $(dirname $0))
+source ./.env
 source /etc/os-release
-
-# Source environment variables
-cd $FILE_PATH
-if [ -f ./opkg-install.env ]; then
-  source ./opkg-install.env
-fi
 
 ###############################################################################
 ### Pre-Script
@@ -76,9 +73,9 @@ opkgStatus=""
 opkgDowngradeOn=0
 opkgDowngradeList=""
 opkgDowngradeNb=0
-if [ -f ./opkg-downgrade.conf ]; then
-  opkgDowngradeList=$(cat ./opkg-downgrade.conf | grep -v '^#' | cut -d' ' -f1 | xargs | sed -e 's/ /|/g')
-  opkgDowngradeNb=$(cat ./opkg-downgrade.conf | grep -v '^#' | cut -d' ' -f1 | wc -l)
+if [ -f opkg-downgrade.conf ]; then
+  opkgDowngradeList=$(cat opkg-downgrade.conf | grep -v '^#' | cut -d' ' -f1 | xargs | sed -e 's/ /|/g')
+  opkgDowngradeNb=$(cat opkg-downgrade.conf | grep -v '^#' | cut -d' ' -f1 | wc -l)
   
   if [ $UPG_AUTO -eq 0 ] && [ $opkgDowngradeNb -gt 0 ]; then
     echo "* "
@@ -87,7 +84,7 @@ if [ -f ./opkg-downgrade.conf ]; then
     if [ -n "$(echo $answer | grep -i '^y')" ]; then
       opkgDowngradeOn=1
 
-      cat ./opkg-downgrade.conf | while read line
+      cat opkg-downgrade.conf | while read line
       do
         # Skip line starts with #
         if [ -n "$(echo $line | grep -v '^#')" ]; then

@@ -67,11 +67,11 @@ USBREBOOT=0
 USBWIPE=0
 USBBUILT=0
 
-# Source environment variables
-cd $FILE_PATH
-if [ -f ~/opkg-install.env ]; then
+# Source under this script directory
+cd $(readlink -f $(dirname $0))
+if [ -f .env ]; then
   ENV=1
-  source ~/opkg-install.env
+  source ./.env
   LOCAL_DOMAIN="${DOMAIN%%.*}"
   NETADDR=${IPADDR%.*}
   IPADDR_GTW=${IPADDR_GTW:-$IPADDR}
@@ -285,9 +285,9 @@ if [ "$1" == "--BRIDGED_AP=1" ]; then
     fi
     uci commit
     
-    sed -i "s/^BRIDGED_AP=.*/BRIDGED_AP=1/g" ~/opkg-install.env
-    sed -i "s/^IPADDR=.*/IPADDR=$IPADDR/g" ~/opkg-install.env
-    sed -i "s/^IPADDR_GTW=.*/IPADDR_GTW=$IPADDR_GTW/g" ~/opkg-install.env
+    sed -i "s/^BRIDGED_AP=.*/BRIDGED_AP=1/g" .env
+    sed -i "s/^IPADDR=.*/IPADDR=$IPADDR/g" .env
+    sed -i "s/^IPADDR_GTW=.*/IPADDR_GTW=$IPADDR_GTW/g" .env
   fi
   exit 0
   
@@ -335,9 +335,9 @@ elif [ "$1" == "--BRIDGED_AP=0" ]; then
     fi
     uci commit
 
-    sed -i "s/^BRIDGED_AP=.*/BRIDGED_AP=0/g" ~/opkg-install.env
-    sed -i "s/^IPADDR=.*/IPADDR=$IPADDR/g" ~/opkg-install.env
-    sed -i "s/^IPADDR_GTW=.*/IPADDR_GTW=/g" ~/opkg-install.env
+    sed -i "s/^BRIDGED_AP=.*/BRIDGED_AP=0/g" .env
+    sed -i "s/^IPADDR=.*/IPADDR=$IPADDR/g" .env
+    sed -i "s/^IPADDR_GTW=.*/IPADDR_GTW=/g" .env
   fi
   exit 0
 
@@ -535,9 +535,9 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
       echo -n "* Reboot to complete wipefs on $USBDEV? [y/N] "
       read answer
       if [ -n "$(echo $answer | grep -i '^y')" ]; then
-        echo "USBREBOOT=1" >> ~/opkg-install.env
-        echo "USBWIPE=1" >> ~/opkg-install.env
-        echo "USBDEV=$USBDEV" >> ~/opkg-install.env
+        echo "USBREBOOT=1" >> .env
+        echo "USBWIPE=1" >> .env
+        echo "USBDEV=$USBDEV" >> .env
         reboot
         exit 0
       else
@@ -622,7 +622,7 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
       echo -n "* Reboot to complete partitions creation on $USBDEV? [y/N] "
       read answer
       if [ -n "$(echo $answer | grep -i '^y')" ]; then
-        echo "USBBUILT=1" >> ~/opkg-install.env
+        echo "USBBUILT=1" >> .env
         reboot
         exit 0
       else
@@ -634,10 +634,10 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
 
 
     # Remove temporary variables
-    sed -i '/^USBREBOOT=/d' ~/opkg-install.env
-    sed -i '/^USBWIPE=/d' ~/opkg-install.env
-    sed -i '/^USBBUILT=/d' ~/opkg-install.env
-    sed -i '/^USBDEV=/d' ~/opkg-install.env
+    sed -i '/^USBREBOOT=/d' .env
+    sed -i '/^USBWIPE=/d' .env
+    sed -i '/^USBBUILT=/d' .env
+    sed -i '/^USBDEV=/d' .env
 
     echo "* "
     echo "* Format partitions with swap/ext4/fat32"
@@ -775,7 +775,7 @@ if [ $ENV -eq 1 ]; then
   echo "* "
   echo "* The current setup: "
   echo "* "
-  cat ~/opkg-install.env | grep -v "^#"
+  cat .env | grep -v "^#"
   echo "* "
   echo -n "* Do you accept this setup? [Y/n] "
   read answer
@@ -890,7 +890,7 @@ if [ $ENV -eq 0 ]; then
   fi
 
   # Save environment variables
-  cat << EOF > ~/opkg-install.env
+  cat << EOF > .env
 DOMAIN="$DOMAIN"
 WIFI_SSID="$WIFI_SSID"
 WIFI_KEY="$WIFI_KEY"
@@ -1042,11 +1042,11 @@ for L in $(uci show firewall | grep "=redirect"); do
   uci -q del firewall.@redirect[-1]
 done
 # Add automatically firewall forward redirection
-if [ -f ~/opkg-install.env ]; then
+if [ -f .env ]; then
   echo "* UCI config firewall redirect"
   # FW_FWD="name|proto|src_dport|dest_ip|dest_port|enabled"
   # FW_FWD="Allow-http|tcp-udp|80|$NETADDR.10|8080|off"
-  for L in $(cat ~/opkg-install.env | grep "^FW_FWD="); do
+  for L in $(cat .env | grep "^FW_FWD="); do
     # Get the value after =
     V=${L#*=}
     # Evaluate variable inside the line
@@ -1155,7 +1155,7 @@ for L in $(uci show dhcp | grep "=host"); do
   uci -q del dhcp.@host[-1]
 done
 # DHCP_STATIC="htpc|DC:A6:32:40:87:93 DC:A6:32:40:87:94|$NETADDR.10"
-for L in $(cat ~/opkg-install.env | grep "^DHCP_STATIC="); do
+for L in $(cat .env | grep "^DHCP_STATIC="); do
   # Get the value after =
   V=${L#*=}
   # Evaluate variable inside the line
@@ -1181,7 +1181,7 @@ uci commit dhcp
 
 # Add automatically domain host
 echo "* UCI config dhcp host"
-if [ -n "$(cat ~/opkg-install.env | grep "^DOMAIN_HOST=")" ]; then
+if [ -n "$(cat .env | grep "^DOMAIN_HOST=")" ]; then
   echo "* UCI config dhcp domain"
   # Remove existing config
   for L in $(uci show dhcp | grep "=domain"); do
@@ -1189,7 +1189,7 @@ if [ -n "$(cat ~/opkg-install.env | grep "^DOMAIN_HOST=")" ]; then
   done
   
   # DOMAIN_HOST="openwrt.htpc|$NETADDR.10"
-  for L in $(cat ~/opkg-install.env | grep "^DOMAIN_HOST="); do
+  for L in $(cat .env | grep "^DOMAIN_HOST="); do
     # Get the value after =
     V=${L#*=}
     # Evaluate variable inside the line
@@ -1244,10 +1244,10 @@ for L in $(uci show fstab); do
 done
 uci commit fstab
 
-if [ -n "$(cat ~/opkg-install.env | grep "^MNT_DEV=")" ]; then
+if [ -n "$(cat .env | grep "^MNT_DEV=")" ]; then
   echo "* UCI mount partitions"
   # MNT_DEV="home-data|/mnt/usb|rw,noatime"
-  for L in $(cat ~/opkg-install.env | grep "^MNT_DEV="); do
+  for L in $(cat .env | grep "^MNT_DEV="); do
     # Get the value after =
     V=${L#*=}
     # Evaluate variable inside the line
@@ -1357,7 +1357,7 @@ fCmd opkg install openssh-sftp-server
 
 echo "* Package Samba SMB/CIFS fileserver for 'Network Shares'"
 fCmd opkg install luci-app-samba4
-if [ -n "$(cat ~/opkg-install.env | grep "^SMB_SHARE=")" ]; then
+if [ -n "$(cat .env | grep "^SMB_SHARE=")" ]; then
   echo "* UCI config samba"
   uci set samba4.@samba[0].description='Samba on OpenWrt'
   uci set samba4.@samba[0].interface='lan'
@@ -1369,7 +1369,7 @@ if [ -n "$(cat ~/opkg-install.env | grep "^SMB_SHARE=")" ]; then
   done
   
   # SMB_SHARE="OpenWrt-Data$|/mnt/data|no|root"
-  for L in $(cat ~/opkg-install.env | grep "^SMB_SHARE="); do
+  for L in $(cat .env | grep "^SMB_SHARE="); do
     # Get the value after =
     V=${L#*=}
     # Evaluate variable inside the line
@@ -1398,7 +1398,7 @@ echo "* Set Samba as local master = yes"
 mv /etc/samba/smb.conf /etc/samba/smb.conf.bak
 sed -i 's/#local master.*/local master = yes/g' /etc/samba/smb.conf.template
 
-if [ -n "$(cat ~/opkg-install.env | grep "^NFS_SHARE=")" ]; then
+if [ -n "$(cat .env | grep "^NFS_SHARE=")" ]; then
   echo "* Package NFS fileserver"
   fCmd opkg install nfs-kernel-server
   
@@ -1406,7 +1406,7 @@ if [ -n "$(cat ~/opkg-install.env | grep "^NFS_SHARE=")" ]; then
   # Remove existing config
   rm -f /etc/exports
   # NFS_SHARE="/mnt/usb|htpc"
-  for L in $(cat ~/opkg-install.env | grep "^NFS_SHARE="); do
+  for L in $(cat .env | grep "^NFS_SHARE="); do
     # Get the value after =
     V=${L#*=}
     # Evaluate variable inside the line
@@ -1585,8 +1585,8 @@ chmod 777 /etc/acme/$DOMAIN
 
 
 
-[ $(cat ./opkg-install.env | grep "^VPN_" | wc -l) -gt 0 ] && ~/opkg-install_openvpn.sh
-[ $(cat ./opkg-install.env | grep "^VPN_USER=" | wc -l) -gt 0 ] && ~/opkg-install_strongswan.sh
+[ $(cat .env | grep "^VPN_" | wc -l) -gt 0 ] && ~/opkg-install_openvpn.sh
+[ $(cat .env | grep "^VPN_USER=" | wc -l) -gt 0 ] && ~/opkg-install_strongswan.sh
 
 
 
@@ -1634,7 +1634,7 @@ cat << 'EOF' > /etc/crontabs/root
 # Update ip addresses list that track attacks, spyware, viruses daily @03:00
 0 3 * * * wget --timeout=5 -qO /etc/blocklist-ipsets.txt https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/firehol_level3.netset
 # Renew WiFi Guest password every year @00:00
-0 0 1 1 * source /root/opkg-install.env && wifi down radio0 && uci set wireless.wifinet0.key="$WIFI_GUEST_KEY" && uci commit wireless && sleep 2 && wifi up radio0
+0 0 1 1 * source /root/.env && wifi down radio0 && uci set wireless.wifinet0.key="$WIFI_GUEST_KEY" && uci commit wireless && sleep 2 && wifi up radio0
 # Check wifi devices every 1 min
 */1 * * * * /root/healthcheck-wifi.sh
 # Check url(s) status every 3 mins
@@ -1716,7 +1716,7 @@ echo '/etc/msmtprc* #mSMTP mail config' >> /etc/sysupgrade.conf
 # echo "Hello this is sending email using mSMTP" | msmtp $(id -un)
 # echo -e "Subject: Test mSMTP\n\nHello this is sending email using mSMTP" | msmtp $(id -un)
 # echo -e "Subject: Power outage @ $(date)\n\n$(upsc el650usb)" | msmtp -a gmail $(id -un)
-# echo -e "From: Pretty Name\r\nSubject: Example subject\r\nContent goes here." | msmtp --debug $(cat opkg-install.env | awk -F= '/^MAIL_ADR=/{print $2}' | sed 's/"//g')
+# echo -e "From: Pretty Name\r\nSubject: Example subject\r\nContent goes here." | msmtp --debug $(cat .env | awk -F= '/^MAIL_ADR=/{print $2}' | sed 's/"//g')
 # Error:
 # Allow access to unsecure apps
 # https://myaccount.google.com/lesssecureapps

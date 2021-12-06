@@ -78,15 +78,17 @@ function fOpkgUpgradable() {
 
 function fShowStatus() {
   local CURR=$1 MAX=$2
-  echo "[$(if [ $CURR -eq $MAX ]; then echo $(echogreen "OK"); else echo $(echoyellow "!!"); fi)]"
+  echo "[$([ $CURR -eq $MAX ] && echo $(echogreen "OK") || echo $(echoyellow "!!"))]"
 }
 
 ###############################################################################
 ### Environment Variables
 
-. ~/opkg-install.env
-. ~/.bash_colors
-. /etc/os-release
+# Source under this script directory
+cd $(readlink -f $(dirname $0))
+source ./.bash_colors
+source ./.env
+source /etc/os-release
 export DISPLAY=:0
 
 ###############################################################################

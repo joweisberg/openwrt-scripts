@@ -31,9 +31,10 @@ function fCmd() {
 SAVEIFS=$IFS
 IFS=$'\n'
 
-# Source environment variables
-cd $FILE_PATH
-source ./opkg-install.env
+# Source under this script directory
+cd $(readlink -f $(dirname $0))
+source ./.env
+
 LOCAL_DOMAIN="${DOMAIN%%.*}"
 NETADDR=${IPADDR%.*}
 IPADDR_GTW=${IPADDR_GTW:-$IPADDR}
@@ -202,7 +203,7 @@ cat << EOF > /etc/ipsec.secrets
 EOF
 # Add automatically vpn user
 # VPN_USER="username|password"
-for L in $(cat ./opkg-install.env | grep "^VPN_USER="); do
+for L in $(cat .env | grep "^VPN_USER="); do
   # Get the value after =
   V=${L#*=}
   # Evaluate variable inside the line

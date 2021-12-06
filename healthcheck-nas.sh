@@ -23,11 +23,9 @@ function fSendMail() {
 ###############################################################################
 ### Environment Variables
 
-# Source environment variables
-cd $FILE_PATH
-if [ -f ./opkg-install.env ]; then
-  source ./opkg-install.env
-fi
+# Source under this script directory
+cd $(readlink -f $(dirname $0))
+[ -f .env ] && source ./.env
 
 # Local Variables
 CHECK_URL=${CHECK_NAS:-http://$HOSTNAME}
