@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-# ssh root@openwrt / @penWrt.!#_
+# ssh root@openwrt
 # /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 #
 # Generate backup config: 
