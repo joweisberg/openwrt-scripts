@@ -1441,8 +1441,8 @@ uci set ddns.myddns_ipv4.lookup_host="$DOMAIN"
 uci set ddns.myddns_ipv4.ip_source='web'
 uci set ddns.myddns_ipv4.service_name='afraid.org-basicauth'
 uci set ddns.myddns_ipv4.domain="$DOMAIN"
-uci set ddns.myddns_ipv4.username='username'
-uci set ddns.myddns_ipv4.password='password'
+uci set ddns.myddns_ipv4.username="$DDNS_USR"
+uci set ddns.myddns_ipv4.password="$DDNS_PWD"
 uci set ddns.myddns_ipv4.force_interval='8'
 if [ $BRIDGED_AP -eq 1 ]; then
   uci set ddns.myddns_ipv4.interface='lan'
