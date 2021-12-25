@@ -3,7 +3,7 @@
 # ssh root@openwrt
 # /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 #
-# Generate backup config:
+# Generate backup config: 
 # source /etc/os-release && rm -f /mnt/data/backup-$VERSION-$HOSTNAME* && sysupgrade -b /mnt/data/backup-$VERSION-$HOSTNAME.$(uci get dhcp.@dnsmasq[0].domain)-$(date +%F).tar.gz
 #
 # Restore backup config:
@@ -15,7 +15,7 @@
 # Flash the new OpenWrt firmware:
 # mkdir /mnt/data; mount /dev/sda3 /mnt/data
 # sysupgrade -v /mnt/data/openwrt-19.07.7-ath79-generic-tplink_archer-c7-v2-squashfs-sysupgrade.bin
-#
+# 
 FILE_PATH=$(readlink -f $(dirname $0))  #/root
 FILE_NAME=$(basename $0)                #opkg-install.sh
 FILE_NAME=${FILE_NAME%.*}               #opkg-install
@@ -115,14 +115,14 @@ function fInstallUsbPackages() {
   if [ -z "$(opkg list-installed | grep 'block-mount')" ]; then
     echo "* Checking for updates, please wait..."
     fCmd opkg update
-
+    
     echo "* Package USB 3.0 disk management"
     fCmd opkg install kmod-usb-core kmod-usb2 kmod-usb3 kmod-usb-storage kmod-usb-storage-uas
     echo "* Package ext4/FAT"
     fCmd opkg install kmod-fs-ext4 kmod-fs-vfat
     echo "* Package mounted partitions"
     fCmd opkg install block-mount
-
+    
     echo "* Package exFAT/ntfs"
 #    echo "* Do not install packages WPA3, SQM QoS, Acme, uHTTPd, IKEv2/IPsec with strongSwan, Collectd/Stats, Adblock, Watchcat, mSMTP!"
     fCmd opkg install kmod-fs-exfat libblkid ntfs-3g
@@ -203,7 +203,7 @@ function fMountPartitions() {
   uci set fstab.@mount[-1].uuid="$UUID"
   uci set fstab.@mount[-1].target="/mnt/data"
   uci set fstab.@mount[-1].options='rw,noatime'
-
+  
   uci commit fstab
 
 
@@ -272,7 +272,7 @@ if [ "$1" == "--BRIDGED_AP=1" ]; then
     uci add firewall forwarding
     uci set firewall.@forwarding[-1].src='guest'
     uci set firewall.@forwarding[-1].dest='lan'
-
+    
     if [ -z "$(uci show firewall | grep 'Disable-Guest-LAN')" ]; then
       uci add firewall rule
       uci set firewall.@rule[-1]=rule
@@ -284,13 +284,13 @@ if [ "$1" == "--BRIDGED_AP=1" ]; then
       uci set firewall.@rule[-1].target='DROP'
     fi
     uci commit
-
+    
     sed -i "s/^BRIDGED_AP=.*/BRIDGED_AP=1/g" .env
     sed -i "s/^IPADDR=.*/IPADDR=$IPADDR/g" .env
     sed -i "s/^IPADDR_GTW=.*/IPADDR_GTW=$IPADDR_GTW/g" .env
   fi
   exit 0
-
+  
 elif [ "$1" == "--BRIDGED_AP=0" ]; then
   echo "* "
   echo -n "* Switch to Access Point? [Y/n] "
@@ -305,7 +305,7 @@ elif [ "$1" == "--BRIDGED_AP=0" ]; then
       IPADDR=$
       NETADDR=${IPADDR%.*}
     fi
-
+    
     uci set network.lan.ipaddr="$IPADDR"
     uci -q del network.lan.gateway
     uci -q del network.guest.gateway
@@ -315,7 +315,7 @@ elif [ "$1" == "--BRIDGED_AP=0" ]; then
     uci -q del firewall.@zone[0].masq
     uci -q del firewall.@zone[0].mtu_fix
     uci -q del firewall.@zone[0].masq_dest
-
+    
     # Remove existing config
     for L in $(uci show firewall | grep "=forwarding"); do
       uci -q del firewall.@forwarding[-1]
@@ -326,7 +326,7 @@ elif [ "$1" == "--BRIDGED_AP=0" ]; then
     uci add firewall forwarding
     uci set firewall.@forwarding[-1].src='guest'
     uci set firewall.@forwarding[-1].dest='wan'
-
+    
     # Remove firewall rule 'Disable-Guest-LAN'
     L=$(uci show firewall | grep 'Disable-Guest-LAN')
     if [ -n "$L" ]; then
@@ -416,11 +416,11 @@ else
   wifi down radio1 && sleep 3 && wifi up radio1
   echo "* Hotspot <$H_WIFI_SSID> as of wan zone is setup."
   echo "* Please check wireless network http://openwrt/cgi-bin/luci/admin/network/wireless"
-
+  
   echo "* "
   echo -n "* Press <enter> to test internet connection..."
   read answer
-
+  
   wget -q --spider --timeout=5 http://www.google.com 2> /dev/null
   if [ $? -eq 0 ]; then  # if Google website is available we update
     echo "* "
@@ -454,7 +454,7 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
 
   if [ -z "$(opkg list-installed | grep lsblk)" ]; then
     fInstallUsbPackages
-    echo "* Install disk utilities packages"
+    echo "* Packages disk utilities"
     fCmd opkg install usbutils e2fsprogs dosfstools wipefs fdisk lsblk
   fi
 
@@ -468,7 +468,7 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
   echo "* "
   lsblk -f /dev/sd[a-d]
   echo "* "
-
+  
   if [ -z "$USBDEV" ]; then
     USBDEV="/dev/sda"
   fi
@@ -499,7 +499,7 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
   fi
   uci commit fstab
   block umount > /dev/null
-
+  
 
 
 
@@ -555,7 +555,7 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
       echo w # Write changes
       ) | fdisk $USBDEV > /dev/null
       sleep 2
-
+    
       SIZE=$(($(free | grep Mem | awk '{print $2}') / 1024))
       echo "* Info: Double RAM for machines with 512MB of RAM or less than, and same with more."
       echo "* Current RAM: ${SIZE}MB"
@@ -644,13 +644,13 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
     mkswap $DEVSWAP > /dev/null 2>&1
     mkfs.ext4 -F -L "rootfs" $DEVROOT > /dev/null 2>&1
     mkfs.fat -F 32 -n "data" $DEVDATA > /dev/null 2>&1
-
+    
     echo "* "
     echo "* Partitions detail for $USBDEV:"
     lsblk -f $USBDEV
     echo "* "
 
-    echo "* Remove disk utilities packages"
+    echo "* Remove Packages disk utilities"
     opkg remove --autoremove usbutils e2fsprogs dosfstools wipefs fdisk lsblk > /dev/null 2>&1
 
     echo "* "
@@ -658,14 +658,14 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
     echo "* Move overlayfs:/overlay to ${FSROOT}GB on $DEVROOT"
     echo "* Add free storage of ${FSDATA}GB on $DEVDATA"
     echo "* "
-
+    
     # Rollback overlay partition
     # /dev/ubi0_1: UUID="e14f77d3-5564-4d4d-b708-842837dc9905" VERSION="w4r0" MOUNT="/overlay" TYPE="ubifs"
     #mount -t ubifs /dev/ubi0_1 /overlay
-
+    
     # Mount swap partition
     swapon $DEVSWAP
-
+    
     # Mount data partition
     mkdir -p /mnt/data
     mount -t vfat $DEVDATA /mnt/data > /dev/null
@@ -682,7 +682,7 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
     cp -a -f /overlay/. /mnt/rootfs
     umount /mnt/rootfs
     block umount > /dev/null
-
+    
     echo "* "
     echo "* "
     echo "* "
@@ -701,10 +701,10 @@ else
   if [ -n "$(echo $answer | grep -i '^y')" ]; then
     echo -n "* Please unplug USB storage <enter to continue>..."
     read answer
-
+    
     if [ -z "$(opkg list-installed | grep lsblk)" ]; then
       fInstallUsbPackages
-      echo "* Install disk utilities packages"
+      echo "* Packages disk utilities"
       fCmd opkg install usbutils e2fsprogs dosfstools wipefs fdisk lsblk
     fi
 
@@ -716,7 +716,7 @@ else
     echo "* "
     lsblk -f /dev/sd[a-d]
     echo "* "
-
+    
     DEVSWAP=$(block info | grep 'swap' | cut -d':' -f1)
     echo -n "* Enter swap device? <$DEVSWAP> "
     read answer
@@ -736,8 +736,8 @@ else
     echo "* Format partitions with swap/ext4"
     mkswap $DEVSWAP > /dev/null 2>&1
     mkfs.ext4 -F -L "rootfs" $DEVROOT > /dev/null 2>&1
-
-    echo "* Remove disk utilities packages"
+    
+    echo "* Remove Packages disk utilities"
     opkg remove --autoremove usbutils e2fsprogs dosfstools wipefs fdisk lsblk > /dev/null 2>&1
 
     fMountPartitions $USBDEV
@@ -859,7 +859,7 @@ if [ $ENV -eq 0 ]; then
     SQM=1
     echo "* "
     echo "* Please check internet speed with https://www.speedtest.net/"
-
+    
     SQM_DL=500
     echo -n "* Enter max donwload speed? <${SQM_DL}Mbps> "
     read answer
@@ -922,6 +922,11 @@ fi
 echo "* UCI config luci"
 uci set luci.main.mediaurlbase='/luci-static/bootstrap'
 uci commit luci
+
+echo "* UCI config hostname"
+HOSTNAME=${HOSTNAME:-OpenWrt}
+uci set system.@system[0].hostname="$HOSTNAME"
+uci commit system
 
 echo "* UCI config timezone"
 uci set system.@system[0].zonename="$TZ_NAME"
@@ -1058,7 +1063,7 @@ if [ -f .env ]; then
     V=$(eval echo $V)
     # Remove " from string
     #V=${V//\"}
-
+    
     uci add firewall redirect
     uci set firewall.@redirect[-1]=redirect
     uci set firewall.@redirect[-1].name="$(echo $V | cut -d'|' -f1)"
@@ -1161,7 +1166,7 @@ echo "* UCI config dhcp static leases"
 for L in $(uci show dhcp | grep "=host"); do
   uci -q del dhcp.@host[-1]
 done
-# DHCP_STATIC="htpc|DC:A6:32:40:87:93 DC:A6:32:40:87:94|$NETADDR.10"
+# DHCP_STATIC="nas|DC:A6:32:40:87:93 DC:A6:32:40:87:94|$NETADDR.10"
 for L in $(cat .env | grep "^DHCP_STATIC="); do
   # Get the value after =
   V=${L#*=}
@@ -1169,7 +1174,7 @@ for L in $(cat .env | grep "^DHCP_STATIC="); do
   V=$(eval echo $V)
   # Remove " from string
   #V=${V//\"}
-
+  
   uci add dhcp host
   uci set dhcp.@host[-1]=host
   uci set dhcp.@host[-1].name="$(echo $V | cut -d'|' -f1)"
@@ -1194,8 +1199,8 @@ if [ -n "$(cat .env | grep "^DOMAIN_HOST=")" ]; then
   for L in $(uci show dhcp | grep "=domain"); do
     uci -q del dhcp.@domain[-1]
   done
-
-  # DOMAIN_HOST="openwrt.htpc|$NETADDR.10"
+  
+  # DOMAIN_HOST="openwrt.nas|$NETADDR.10"
   for L in $(cat .env | grep "^DOMAIN_HOST="); do
     # Get the value after =
     V=${L#*=}
@@ -1203,7 +1208,7 @@ if [ -n "$(cat .env | grep "^DOMAIN_HOST=")" ]; then
     V=$(eval echo $V)
     # Remove " from string
     #V=${V//\"}
-
+    
     uci add dhcp domain
     uci set dhcp.@domain[-1]=domain
     uci set dhcp.@domain[-1].name="$(echo $V | cut -d'|' -f1).$LOCAL_DOMAIN"
@@ -1280,7 +1285,7 @@ if [ -n "$(cat .env | grep "^MNT_DEV=")" ]; then
           break
         fi
       done
-
+      
       uci add fstab mount
       uci set fstab.@mount[-1]=mount
       uci set fstab.@mount[-1].enabled='1'
@@ -1362,20 +1367,20 @@ fi
 echo "* Package SFTP fileserver"
 fCmd opkg install openssh-sftp-server
 
-echo "* Package Samba SMB/CIFS fileserver for 'Network Shares'"
+echo "* Package Samba SMB/CIFS fileserver"
 fCmd opkg install luci-app-samba4
 if [ -n "$(cat .env | grep "^SMB_SHARE=")" ]; then
   echo "* UCI config samba"
-  uci set samba4.@samba[0].description='Samba on OpenWrt'
+  uci set samba4.@samba[0].description="Samba on $HOSTNAME"
   uci set samba4.@samba[0].interface='lan'
   uci set samba4.@samba[0].enable_extra_tuning='1'
-
+  
   # Remove existing config
   for L in $(uci show samba4 | grep "=sambashare"); do
     uci -q del samba4.@sambashare[-1]
   done
-
-  # SMB_SHARE="OpenWrt-Data$|/mnt/data|no|root"
+  
+  # SMB_SHARE="Data$|/mnt/data|no|root"
   for L in $(cat .env | grep "^SMB_SHARE="); do
     # Get the value after =
     V=${L#*=}
@@ -1408,11 +1413,11 @@ sed -i 's/#local master.*/local master = yes/g' /etc/samba/smb.conf.template
 if [ -n "$(cat .env | grep "^NFS_SHARE=")" ]; then
   echo "* Package NFS fileserver"
   fCmd opkg install nfs-kernel-server
-
+  
   echo "* UCI config nfs"
   # Remove existing config
   rm -f /etc/exports
-  # NFS_SHARE="/mnt/usb|htpc"
+  # NFS_SHARE="/mnt/usb|nas"
   for L in $(cat .env | grep "^NFS_SHARE="); do
     # Get the value after =
     V=${L#*=}
@@ -1527,13 +1532,13 @@ if [ $STATS -eq 1 ]; then
   uci add luci_statistics collectd_network_server
   uci set luci_statistics.@collectd_network_server[-1].host='0.0.0.0'
   uci set luci_statistics.@collectd_network_server[-1].port='25826'
-
+  
   uci set luci_statistics.collectd_rrdtool.enable='1'
   uci set luci_statistics.collectd_rrdtool.DataDir='/tmp/rrd'
   uci set luci_statistics.collectd_rrdtool.RRASingle='1'
   uci set luci_statistics.collectd_rrdtool.RRARows='100'
   uci set luci_statistics.collectd_rrdtool.CacheTimeout='100'
-
+  
   uci set luci_statistics.collectd_processes.enable='1'
   uci set luci_statistics.collectd_processes.Processes='uhttpd dnsmasq dropbear ipsec udhcpc'
   uci set luci_statistics.collectd_sensors.enable='1'
@@ -1622,7 +1627,7 @@ config ipset
   option storage 'hash'
   option enabled '1'
   option loadfile '/etc/blocklist-ipsets.txt'
-
+ 
 config rule
   option src 'wan'
   option ipset 'dropcidr'
