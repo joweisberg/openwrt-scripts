@@ -302,7 +302,7 @@ elif [ "$1" == "--BRIDGED_AP=0" ]; then
     echo -n "* Enter this router ip address? <$IPADDR> "
     read answer
     if [ -n "$answer" ]; then
-      IPADDR=$
+      IPADDR=$answer
       NETADDR=${IPADDR%.*}
     fi
     
