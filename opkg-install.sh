@@ -820,7 +820,7 @@ if [ $ENV -eq 0 ]; then
   echo -n "* Enter this router ip address? <$IPADDR> "
   read answer
   if [ -n "$answer" ]; then
-    IPADDR=$
+    IPADDR=$answer
     NETADDR=${IPADDR%.*}
   fi
   echo -n "* Enter Guest ip address mask? <$NETADDR_GUEST> "
