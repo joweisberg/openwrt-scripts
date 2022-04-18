@@ -37,7 +37,6 @@ source ./.env
 
 LOCAL_DOMAIN="${DOMAIN%%.*}"
 NETADDR=${IPADDR%.*}
-IPADDR_GTW=${IPADDR_GTW:-$IPADDR}
 
 ###############################################################################
 ### Script
@@ -106,7 +105,7 @@ uci add network route
 uci set network.@route[-1].interface='ipsec_server'
 uci set network.@route[-1].target='10.10.3.0'
 uci set network.@route[-1].netmask='255.255.255.0'
-uci set network.@route[-1].gateway="$IPADDR_GTW"
+uci set network.@route[-1].gateway="$IPADDR"
 uci commit network
 
 echo "* UCI config dhcp/dnsmasq for IKEv2/IPsec VPN server"

@@ -39,8 +39,6 @@ source ./.env
 
 LOCAL_DOMAIN="${DOMAIN%%.*}"
 NETADDR=${IPADDR%.*}
-IPADDR_GTW=${IPADDR_GTW:-$IPADDR}
-BRIDGED_AP=${BRIDGED_AP:-0}
 
 ###############################################################################
 ### Script
@@ -206,7 +204,7 @@ uci -q del openvpn.server
 uci set openvpn.server=openvpn
 uci set openvpn.server.enabled='1'
 uci set openvpn.server.port='1194'
-uci set openvpn.server.proto='udp'
+uci set openvpn.server.proto='udp4'
 uci set openvpn.server.dev="tun$i"
 uci set openvpn.server.ca="$OVPN_KEYS/ca.crt"
 uci set openvpn.server.cert="$OVPN_KEYS/server.crt"
@@ -295,7 +293,7 @@ if [ -n "$(cat .env | grep "^VPN_CLIENT=")" ]; then
   uci set openvpn.server_s2s=openvpn
   uci set openvpn.server_s2s.enabled='1'
   uci set openvpn.server_s2s.port='1195'
-  uci set openvpn.server_s2s.proto='udp'
+  uci set openvpn.server_s2s.proto='udp4'
   uci set openvpn.server_s2s.dev="tun$i"
   uci set openvpn.server_s2s.ca="$OVPN_KEYS/ca.crt"
   uci set openvpn.server_s2s.cert="$OVPN_KEYS/server.crt"
@@ -351,6 +349,9 @@ proto udp
 remote $DOMAIN 1195
 remote-cert-tls server
 resolv-retry 5
+auth SHA1
+data-ciphers AES-256-GCM
+data-ciphers-fallback AES-256-GCM
 nobind
 auth-nocache
 auth-user-pass /etc/openvpn/$DOMAIN.auth
@@ -426,11 +427,11 @@ fi
 
 
 # Add custom OpenVPN Client Site config files
-if [ -n "$(cat .env | grep "^VPN_SITE=")" ] && [ $BRIDGED_AP -eq 0 ]; then
+if [ -n "$(cat .env | grep "^VPN_SITE=")" ]; then
 
   echo "* Set OpenVPN Client Site config"
 
-  # VPN_SITE="https://ejw.root.sx/openvpn/jdwt.root.sx.ovpn|username|password"
+  # VPN_SITE="https://jdw.root.sx/openvpn/jdwt.root.sx.ovpn|username|password"
   for L in $(cat .env | grep "^VPN_SITE="); do
     # Get the value after =
     V=${L#*=}
@@ -450,12 +451,17 @@ if [ -n "$(cat .env | grep "^VPN_SITE=")" ] && [ $BRIDGED_AP -eq 0 ]; then
     #F_NAME=$(echo $F_NAME | sed 's/^.*\(@.*\)/\1/g' | sed 's/\@//g')
     # Remove username from config file
     # F_NAME=jdwt.root.sx@ejw.root.sx.ovpn --> ejw.root.sx.ovpn
-    F_NAME=$(echo $F_NAME | sed "s/$V_USR\@//g")
+    # F_NAME=$(echo $F_NAME | sed "s/$V_USR\@//g")
     F_EXT=${F_FULLNAME##*.}
     F_FULLPATH=/etc/openvpn/$F_NAME.$F_EXT
     
     echo -e "\t* Downloading config file from $V_CFG"
     wget --no-check-certificate -qO$F_FULLPATH $V_CFG
+    
+    # Rename based on remote server name
+    REMOTE_SERVER=$(cat /etc/openvpn/$F_NAME.$F_EXT | awk '/^remote /{print $2}')
+    mv /etc/openvpn/$F_NAME.$F_EXT /etc/openvpn/$REMOTE_SERVER.$F_EXT
+    F_NAME=$REMOTE_SERVER
 
     NAME=$F_NAME
     #NAME=my_expressvpn_france_-_paris_-_1_udp.ovpn
@@ -490,10 +496,10 @@ if [ -n "$(cat .env | grep "^VPN_SITE=")" ] && [ $BRIDGED_AP -eq 0 ]; then
     uci set openvpn.$NAME.config=$F_FULLPATH
 
     # /etc/config/network
-    uci set network.vpn_$NAME=interface
-    uci set network.vpn_$NAME.proto='none'
-    uci set network.vpn_$NAME.device="tun$i"
-    uci set network.vpn_$NAME.auto='1'
+    uci set network.ovpn_$NAME=interface
+    uci set network.ovpn_$NAME.proto='none'
+    uci set network.ovpn_$NAME.device="tun$i"
+    uci set network.ovpn_$NAME.auto='1'
 
     # /etc/config/firewall
     #uci add_list firewall.@zone[1].network='ovpn_server'

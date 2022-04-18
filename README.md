@@ -6,7 +6,8 @@ Create a generic script to **install custom OpenWrt configuration automatically*
 
 ## Main functionalities
 - Wi-Fi SSID and password [settings](http://openwrt/cgi-bin/luci/admin/network/wireless)
-- Wi-Fi SSID_Guest and password [settings](http://openwrt/cgi-bin/luci/admin/network/wireless)
+- Wi-Fi MESH SSID and password [settings](http://openwrt/cgi-bin/luci/admin/network/wireless)
+- Wi-Fi Guest SSID_Guest and password [settings](http://openwrt/cgi-bin/luci/admin/network/wireless)
 - TimeZone [settings](http://openwrt/cgi-bin/luci/admin/system/system)
 - Dynamic DNS [settings](http://openwrt/cgi-bin/luci/admin/services/ddns)
 - DHCP Static Leases [settings](http://openwrt/cgi-bin/luci/admin/network/dhcp)
@@ -174,7 +175,7 @@ $ /root/opkg-install.sh 2>&1 | tee /var/log/opkg-install.log
 * Package hd-idle
 * Package SFTP fileserver
 * Package wget
-* Install disk utilities packages
+* Package disk utilities
 * Please plug back in USB storage <enter to continue>...
 *
 * List of available USB devices:
@@ -262,7 +263,7 @@ sda
 * Package hd-idle
 * Package SFTP fileserver
 * Package wget
-* Install disk utilities packages
+* Package disk utilities
 * Please plug back in USB storage <enter to continue>...
 *
 * List of available USB devices:
@@ -399,7 +400,10 @@ cp: can't stat 'acme.sh': No such file or directory
 * Please check swap mounted partition http://openwrt/cgi-bin/luci/admin/system/mounts
 *
 *
-* Get ACME certificates command line to run, if encountered errors during installation!
+* Certificates issue:
+/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on && /etc/acme/acme.sh --home /etc/acme --issue --server letsencrypt -d $DOMAIN -w /www 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off && /usr/sbin/ipsec restart
+*
+* Certificates renew:
 /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off && /usr/sbin/ipsec restart
 *
 *
