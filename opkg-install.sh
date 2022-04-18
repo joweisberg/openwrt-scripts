@@ -37,7 +37,11 @@ if [ "$1" == "-h" ] || [ "$1" == "--help" ] || [ $HELP -eq 1 ]; then
 fi
 
 
-# Do not interprate sapce in variable
+###############################################################################
+##### Default environment variables
+###############################################################################
+
+# Do not interprate space in variable
 SAVEIFS=$IFS
 IFS=$'\n'
 
@@ -49,15 +53,14 @@ LOCAL_DOMAIN="${DOMAIN%%.*}"
 WIFI_SSID="Box-$(cat /dev/urandom | tr -dc A-Z | head -c4)"
 WIFI_KEY="$(cat /dev/urandom | tr -dc A-Za-z0-9 | head -c13)"
 WIFI_GUEST_KEY="Guest$(date +'%Y')"
-BRIDGED_AP=0                    ## Extend your existing wired host router to have wireless capabilities (same network, different ip)
 IPADDR="192.168.1.1"
-IPADDR_GTW=${IPADDR_GTW:-$IPADDR}
 NETADDR=${IPADDR%.*}
 NETADDR_GUEST="10.10.10"
-WPA3=0
-FBXTV=0
-UWAN=0
-WWAN=0
+80211R=0                        ## Enable 802.11r Fast Transition
+MESH=0                          ## Enable Mesh support like with dedicated SSID to connect wifi repeater
+FBXTV=0                         ## QoS advices Smart TV for Freebox
+UWAN=0                          ## USB tethering connection
+WWAN=0                          ## USB Modem 4G/LTE with NCM protocol
 AD_REBOOT=0
 SQM=0
 STATS=0
@@ -74,12 +77,13 @@ if [ -f .env ]; then
   source ./.env
   LOCAL_DOMAIN="${DOMAIN%%.*}"
   NETADDR=${IPADDR%.*}
-  IPADDR_GTW=${IPADDR_GTW:-$IPADDR}
 fi
 
 
 
-
+###############################################################################
+### Pre-Script
+###############################################################################
 
 echo "* Set access rights on uploaded files"
 find /root -type d -exec chmod 755 "{}" \;
@@ -400,17 +404,18 @@ else
   uci set network.hwan.proto='dhcp'
   uci commit network
   # /etc/config/wireless
-  uci set wireless.wifinet1=wifi-iface
-  uci set wireless.wifinet1.device='radio1'
-  uci set wireless.wifinet1.mode='sta'
-  uci set wireless.wifinet1.network='hwan'
-  uci set wireless.wifinet1.ssid="$H_WIFI_SSID"
-  uci set wireless.wifinet1.key="$H_WIFI_KEY"
-  uci set wireless.wifinet1.encryption='psk-mixed'
+  uci set wireless.wifinet10=wifi-iface
+  uci set wireless.wifinet10.device='radio1'
+  uci set wireless.wifinet10.mode='sta'
+  uci set wireless.wifinet10.network='hwan'
+  uci set wireless.wifinet10.ssid="$H_WIFI_SSID"
+  uci set wireless.wifinet10.key="$H_WIFI_KEY"
+  uci set wireless.wifinet10.encryption='psk-mixed'
 
+  # Enable radio1 devices for hotspot connection
   uci set wireless.radio1.disabled='0'
   # uci set wireless.default_radio1.disabled='0'
-  # uci set wireless.wifinet1.disabled='0'
+  # uci set wireless.wifinet0.disabled='0'
   for UCI_DEV in $(uci show wireless | grep ".device='radio1'" | cut -d'=' -f1 | sed 's/.device//g'); do uci set $UCI_DEV.disabled='0'; done
   uci commit wireless
   wifi down radio1 && sleep 3 && wifi up radio1
@@ -454,7 +459,7 @@ if [ -n "$(echo $answer | grep -i '^y')" ]; then
 
   if [ -z "$(opkg list-installed | grep lsblk)" ]; then
     fInstallUsbPackages
-    echo "* Packages disk utilities"
+    echo "* Package disk utilities"
     fCmd opkg install usbutils e2fsprogs dosfstools wipefs fdisk lsblk
   fi
 
@@ -704,7 +709,7 @@ else
     
     if [ -z "$(opkg list-installed | grep lsblk)" ]; then
       fInstallUsbPackages
-      echo "* Packages disk utilities"
+      echo "* Package disk utilities"
       fCmd opkg install usbutils e2fsprogs dosfstools wipefs fdisk lsblk
     fi
 
@@ -737,7 +742,7 @@ else
     mkswap $DEVSWAP > /dev/null 2>&1
     mkfs.ext4 -F -L "rootfs" $DEVROOT > /dev/null 2>&1
     
-    echo "* Remove Packages disk utilities"
+    echo "* Remove Package disk utilities"
     opkg remove --autoremove usbutils e2fsprogs dosfstools wipefs fdisk lsblk > /dev/null 2>&1
 
     fMountPartitions $USBDEV
@@ -807,20 +812,10 @@ if [ $ENV -eq 0 ]; then
   if [ -n "$answer" ]; then
     WIFI_GUEST_KEY=$answer
   fi
-  if [ $BRIDGED_AP -eq 1 ]; then
-    IPADDR=192.168.1.5
-    NETADDR=${IPADDR%.*}
-    IPADDR_GTW=192.168.1.1
-    echo -n "* Enter main router ip address (connected to internet)? <$IPADDR_GTW> "
-    read answer
-    if [ -n "$answer" ]; then
-      IPADDR_GTW=$answer
-    fi
-  fi
   echo -n "* Enter this router ip address? <$IPADDR> "
   read answer
   if [ -n "$answer" ]; then
-    IPADDR=$
+    IPADDR=$answer
     NETADDR=${IPADDR%.*}
   fi
   echo -n "* Enter Guest ip address mask? <$NETADDR_GUEST> "
@@ -828,17 +823,12 @@ if [ $ENV -eq 0 ]; then
   if [ -n "$answer" ]; then
     NETADDR_GUEST=$answer
   fi
-  echo -n "* Enable WPA2/WPA3 Personal (PSK/SAE) mixed mode? [y/N] "
-  read answer
-  if [ -n "$(echo $answer | grep -i '^y')" ]; then
-    WPA3=1
-  fi
   echo -n "* Enable Freebox TV QoS advices config? [y/N] "
   read answer
   if [ -n "$(echo $answer | grep -i '^y')" ]; then
     FBXTV=1
   fi
-  echo -n "* Enable usb wan config? [y/N] "
+  echo -n "* Enable usb tethering config? [y/N] "
   read answer
   if [ -n "$(echo $answer | grep -i '^y')" ]; then
     UWAN=1
@@ -896,8 +886,6 @@ WIFI_SSID="$WIFI_SSID"
 WIFI_KEY="$WIFI_KEY"
 WIFI_GUEST_KEY="$WIFI_GUEST_KEY"
 IPADDR="$IPADDR"
-IPADDR_GTW="${IPADDR_GTW:-$IPADDR}"
-WPA3=$WPA3
 FBXTV=$FBXTV
 UWAN=$UWAN
 WWAN=$WWAN
@@ -912,7 +900,10 @@ EOF
 fi
 
 
-
+runstart=$(date +%s)
+echo "* "
+echo "* Start time: $(date)"
+echo "* "
 
 
 ###############################################################################
@@ -935,9 +926,6 @@ uci commit system
 
 echo "* UCI config lan network"
 uci set network.lan.ipaddr="$IPADDR"
-if [ $BRIDGED_AP -eq 1 ]; then
-  uci set network.lan.gateway="$IPADDR_GTW"
-fi
 uci set network.lan.netmask='255.255.255.0'
 # Cloudflare and APNIC
 # Primary DNS: 1.1.1.1
@@ -961,9 +949,6 @@ uci set network.guest.ifname='wlan1-1'
 uci set network.guest.proto='static'
 uci set network.guest.ipaddr="$NETADDR_GUEST.1"
 uci set network.guest.netmask='255.255.255.0'
-if [ $BRIDGED_AP -eq 1 ]; then
-  uci set network.guest.gateway="$IPADDR_GTW"
-fi
 uci -q del network.guest.dns
 uci add_list network.guest.dns='1.1.1.3'
 uci add_list network.guest.dns='1.0.0.3'
@@ -976,10 +961,6 @@ uci set dhcp.lan.start='100'
 uci set dhcp.lan.limit='150'
 uci set dhcp.lan.leasetime='12h'
 uci set dhcp.lan.force='1'
-if [ $BRIDGED_AP -eq 1 ]; then
-  uci -q del dhcp.lan.dhcp_option
-  uci add_list dhcp.lan.dhcp_option="3,$IPADDR_GTW"
-fi
 # Disable DHCPv6 Server
 uci -q del dhcp.lan.ra
 uci -q del dhcp.lan.dhcpv6
@@ -989,10 +970,6 @@ uci set dhcp.guest.interface='guest'
 uci set dhcp.guest.start='100'
 uci set dhcp.guest.limit='50'
 uci set dhcp.guest.leasetime='1h'
-if [ $BRIDGED_AP -eq 1 ]; then
-  uci -q del dhcp.guest.dhcp_option
-  uci add_list dhcp.guest.dhcp_option="3,$IPADDR_GTW"
-fi
 uci commit dhcp
 
 echo "* UCI config firewall"
@@ -1139,17 +1116,45 @@ uci set wireless.default_radio1.ssid="$WIFI_SSID"
 uci set wireless.default_radio1.key="$WIFI_KEY"
 uci set wireless.default_radio1.encryption='psk-mixed+ccmp'
 uci set wireless.default_radio1.network='lan'
-uci set wireless.wifinet0=wifi-iface
-uci set wireless.wifinet0.device='radio1'
-uci set wireless.wifinet0.mode='ap'
-uci set wireless.wifinet0.network='guest'
-uci set wireless.wifinet0.ssid="${WIFI_SSID}_Guest"
-uci set wireless.wifinet0.key="$WIFI_GUEST_KEY"
-uci set wireless.wifinet0.encryption='psk-mixed'
-uci set wireless.wifinet0.isolate='1'
-# BUG: Can't connect to internet with Guest wifi
-if [ $BRIDGED_AP -eq 1 ]; then
-  uci set wireless.wifinet0.disabled='1'
+
+if [ $MESH -eq 1 ]; then
+  uci set wireless.wifinet0=wifi-iface
+  uci set wireless.wifinet0.device='radio0'
+  uci set wireless.wifinet0.mode='ap'
+  uci set wireless.wifinet0.network='lan'
+  uci set wireless.wifinet0.ssid="$MESH_SSID"
+  uci set wireless.wifinet0.key="$MESH_KEY"
+  uci set wireless.wifinet0.encryption='psk-mixed+ccmp'
+  uci set wireless.wifinet1=wifi-iface
+  uci set wireless.wifinet1.device='radio1'
+  uci set wireless.wifinet1.mode='ap'
+  uci set wireless.wifinet1.network='lan'
+  uci set wireless.wifinet1.ssid="$MESH_SSID"
+  uci set wireless.wifinet1.key="$MESH_KEY"
+  uci set wireless.wifinet1.encryption='psk-mixed+ccmp'
+fi
+
+uci set wireless.wifinet5=wifi-iface
+uci set wireless.wifinet5.device='radio1'
+uci set wireless.wifinet5.mode='ap'
+uci set wireless.wifinet5.network='guest'
+uci set wireless.wifinet5.ssid="${WIFI_SSID}_Guest"
+uci set wireless.wifinet5.key="$WIFI_GUEST_KEY"
+uci set wireless.wifinet5.encryption='psk-mixed'
+uci set wireless.wifinet5.isolate='1'
+
+if [ $80211R -eq 1 ]; then
+  # Enable 802.11r Fast Transition
+  # Enable fast roaming among access points that belong to the same Mobility Domain
+  uci set wireless.default_radio0.ieee80211r='1'
+  uci set wireless.default_radio0.ft_over_ds='1'
+  uci set wireless.default_radio0.ft_psk_generate_local='1'
+  uci set wireless.default_radio1.ieee80211r='1'
+  uci set wireless.default_radio1.ft_over_ds='1'
+  uci set wireless.default_radio1.ft_psk_generate_local='1'
+  # Disassociate On Low Acknowledgement
+  uci set wireless.default_radio0.disassoc_low_ack='1'
+  uci set wireless.default_radio1.disassoc_low_ack='1'
 fi
 uci commit wireless
 
@@ -1338,24 +1343,28 @@ if [ $WWAN -eq 1 ]; then
   uci commit firewall
 fi
 
-if [ $WPA3 -eq 1 ]; then
-  echo "* Package WPA2/WPA3 Personal (PSK/SAE) mixed mode"
-  opkg remove --autoremove wpad-basic > /dev/null 2>&1
-  fCmd opkg install wpad-openssl
-  echo "* UCI config WPA2/WPA3 (PSK/SAE)"
-  # Fix iOS 13.1.3 connected: option auth_cache '1'
-  uci set wireless.default_radio0.auth_cache='1'
-  uci set wireless.default_radio0.ieee80211w='0'
-  uci set wireless.default_radio0.encryption='sae-mixed'
-  uci set wireless.default_radio1.auth_cache='1'
-  uci set wireless.default_radio1.ieee80211w='0'
-  uci set wireless.default_radio1.encryption='sae-mixed'
-  # Keep Guest Encryption: WPA2 PSK (CCMP)
-  #uci set wireless.wifinet0.auth_cache='1'
-  #uci set wireless.wifinet0.ieee80211w='0'
-  uci set wireless.wifinet0.encryption='psk-mixed'
-  uci commit wireless
+echo "* Package WPA2/WPA3 Personal (PSK/SAE) mixed mode"
+opkg remove --autoremove wpad-basic > /dev/null 2>&1
+fCmd opkg install wpad-openssl
+echo "* UCI config WPA2/WPA3 (PSK/SAE)"
+# Fix iOS 13.1.3 connected: option auth_cache '1'
+uci set wireless.default_radio0.auth_cache='1'
+uci set wireless.default_radio0.ieee80211w='0'
+uci set wireless.default_radio0.encryption='sae-mixed'
+uci set wireless.default_radio1.auth_cache='1'
+uci set wireless.default_radio1.ieee80211w='0'
+uci set wireless.default_radio1.encryption='sae-mixed'
+
+if [ $MESH -eq 1 ]; then
+  uci set wireless.wifinet0.encryption='sae-mixed'
+  uci set wireless.wifinet1.encryption='sae-mixed'
 fi
+
+# Keep Guest Encryption: WPA2 PSK (CCMP)
+#uci set wireless.wifinet5.auth_cache='1'
+#uci set wireless.wifinet5.ieee80211w='0'
+uci set wireless.wifinet5.encryption='psk-mixed'
+uci commit wireless
 
 echo "* Package SFTP fileserver"
 fCmd opkg install openssh-sftp-server
@@ -1442,9 +1451,7 @@ uci set ddns.myddns_ipv4.domain="$DOMAIN"
 uci set ddns.myddns_ipv4.username="$DDNS_USR"
 uci set ddns.myddns_ipv4.password="$DDNS_PWD"
 uci set ddns.myddns_ipv4.force_interval='8'
-if [ $BRIDGED_AP -eq 1 ]; then
-  uci set ddns.myddns_ipv4.interface='lan'
-elif [ $UWAN -eq 1 ]; then
+if [ $UWAN -eq 1 ]; then
   uci set ddns.myddns_ipv4.interface='uwan'
 elif [ $WWAN -eq 1 ]; then
   uci set ddns.myddns_ipv4.interface='wwan'
@@ -1639,7 +1646,7 @@ cat << 'EOF' > /etc/crontabs/root
 # Update ip addresses list that track attacks, spyware, viruses daily @03:00
 0 3 * * * wget --timeout=5 -qO /etc/blocklist-ipsets.txt https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/firehol_level3.netset
 # Renew WiFi Guest password every year @00:00
-0 0 1 1 * source /root/.env && wifi down radio0 && uci set wireless.wifinet0.key="$WIFI_GUEST_KEY" && uci commit wireless && sleep 2 && wifi up radio0
+0 0 1 1 * source /root/.env && wifi down radio0 && uci set wireless.wifinet5.key="$WIFI_GUEST_KEY" && uci commit wireless && sleep 2 && wifi up radio0
 # Check wifi devices every 1 min
 */1 * * * * /root/healthcheck-wifi.sh
 # Check url(s) status every 3 mins
@@ -1647,10 +1654,10 @@ cat << 'EOF' > /etc/crontabs/root
 EOF
 
 if [ $WWAN -eq 1 ]; then
-  echo "# Check LTE connection every 3 mins" >> /etc/crontabs/root
-  echo "*/3 * * * * /root/healthcheck-wwan.sh" >> /etc/crontabs/root
-  echo "# Restart wwan interface @05:00am (sync ip renew every 12h @15h30)" >> /etc/crontabs/root
-  echo "30 3 * * * ifdown wwan && sleep 2 && ifup wwan" >> /etc/crontabs/root
+  echo "# Check LTE connection every 1 min" >> /etc/crontabs/root
+  echo "*/1 * * * * /root/healthcheck-wwan.sh" >> /etc/crontabs/root
+  echo "# Restart wwan interface @02:50 (sync ip renew every 12h, next @15h00)" >> /etc/crontabs/root
+  echo "50 2 * * * ifdown wwan && sleep 2 && ifup wwan" >> /etc/crontabs/root
 else
   rm -f /root/healthcheck-wwan.sh
 fi
@@ -1689,28 +1696,31 @@ tls_certcheck off
 aliases /etc/msmtp.aliases
 logfile /var/log/msmtp.log
 
-# Free
-account free
-host smtp.free.fr
-port 25
-tls off
-tls_starttls off
-from no-reply@free.fr
-auth off
-
 # Gmail
 account gmail
 host smtp.gmail.com
 port 587
 tls on
 tls_starttls on
-from no-reply@gmail.com
+auto_from on
 auth on
-user $(echo $MAIL_ADR | awk -F@ '{print $1}')
-password $MAIL_PWD
+#user $(echo $GMAIL_USR | awk -F@ '{print $1}')
+user $GMAIL_USR
+password $GMAIL_PWD
+
+# SendGrid: Email Delivery, API, Marketing Service
+account sendgrid
+host smtp.sendgrid.net
+port 587
+tls on
+tls_starttls on
+from $SENDGRID_FROM
+auth on
+user apikey
+password $SENDGRID_PWD
 
 # Set a default account
-account default : gmail
+account default : sendgrid
 EOF
 cat << EOF > /etc/msmtp.aliases
 root: $MAIL_ADR
@@ -1777,7 +1787,7 @@ echo '/root/*.ipk #upgrade opkg exception packages' >> /etc/sysupgrade.conf
 if [ -n "$(uci show | grep "$H_WIFI_SSID")" ]; then
   echo "* Remove Hotspot <$H_WIFI_SSID> as of wan zone"
   # /etc/config/wireless
-  uci -q del wireless.wifinet1
+  uci -q del wireless.wifinet10
   uci commit wireless
   # /etc/config/network
   uci -q del network.hwan
@@ -1801,12 +1811,26 @@ echo "* "
 echo "* "
 echo "* Get ACME certificates command line to run, if encountered errors during installation!"
 if [ $FW_FWD_NAS_CERTS -eq 1 ]; then
+  echo "* Certificates issue:"
+  echo "/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on Allow-NAS-http=off && /etc/acme/acme.sh --home /etc/acme --issue --server letsencrypt -d $DOMAIN -w /www 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off Allow-NAS-http=on && /usr/sbin/ipsec restart"
+  echo "* "
+  echo "* Certificates renew:"
   echo "/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on Allow-NAS-http=off && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off Allow-NAS-http=on && /usr/sbin/ipsec restart"
 else
+  echo "* Certificates issue:"
+  echo "/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on && /etc/acme/acme.sh --home /etc/acme --issue --server letsencrypt -d $DOMAIN -w /www 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off && /usr/sbin/ipsec restart"
+  echo "* "
+  echo "* Certificates renew:"
   echo "/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off && /usr/sbin/ipsec restart"
 fi
 echo "* "
 echo "* "
+
+echo "* "
+echo "* End time: $(date)"
+runend=$(date +%s)
+runtime=$((runend-runstart))
+echo "* Elapsed time: $(($runtime / 3600))hrs $((($runtime / 60) % 60))min $(($runtime % 60))sec"
 
 # Rollback Internal Field Separator
 IFS=$SAVEIFS
