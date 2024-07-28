@@ -51,6 +51,28 @@ fi
 ###############################################################################
 ### Script
 
+# Restart radio and wifinet when device is down
+# wireless.radio0.disabled='1'
+for R in $(uci show wireless | grep "wireless.radio" | grep ".disabled='1'"); do
+  radio=$(echo $R | awk -F'.' '{print $2}')
+  wifi down $radio
+  
+  uci set wireless.$radio.disabled='0'
+  for L in $(uci show wireless | grep ".device='$radio'"); do
+    # Get the value before =
+    K=${L%%=*}
+    # Get the value after =
+    V=${L#*=}
+    
+    # wireless.default_radio0.device='radio0'
+    # wireless.wifinet0.device='radio0'
+    uci set $(echo $K | sed "s/device/disabled/g")='0'
+  done
+  
+  uci commit wireless
+  wifi up $radio
+done
+
 for DEV in $(echo $CHECK_DEV | tr "|" "\n"); do
   DEV_MSG=$(iwinfo $DEV info | awk '/Master  Channel/{print $4}')
   if [ "$DEV_MSG" != "unknown" ]; then

@@ -52,11 +52,13 @@ DOMAIN="${1:-sub.domain.com}"   ## This domain must actually point to your route
 LOCAL_DOMAIN="${DOMAIN%%.*}"
 WIFI_SSID="Box-$(cat /dev/urandom | tr -dc A-Z | head -c4)"
 WIFI_KEY="$(cat /dev/urandom | tr -dc A-Za-z0-9 | head -c13)"
+MESH_SSID="$(echo $WIFI_SSID | sed 's/Box-/Mesh-/g')"
+MESH_KEY="$WIFI_KEY"
 WIFI_GUEST_KEY="Guest$(date +'%Y')"
 IPADDR="192.168.1.1"
 NETADDR=${IPADDR%.*}
 NETADDR_GUEST="10.10.10"
-80211R=0                        ## Enable 802.11r Fast Transition
+WIFI_80211R=0                   ## Enable 802.11r Fast Transition
 MESH=0                          ## Enable Mesh support like with dedicated SSID to connect wifi repeater
 FBXTV=0                         ## QoS advices Smart TV for Freebox
 UWAN=0                          ## USB tethering connection
@@ -66,9 +68,17 @@ SQM=0
 STATS=0
 FW_FWD_NAS_CERTS=0
 
+# Create and moving Rootfs & Swap on new USB storage
 USBREBOOT=0
 USBWIPE=0
 USBBUILT=0
+
+
+
+
+###############################################################################
+##### Environment variables
+###############################################################################
 
 # Source under this script directory
 cd $(readlink -f $(dirname $0))
@@ -78,6 +88,7 @@ if [ -f .env ]; then
   LOCAL_DOMAIN="${DOMAIN%%.*}"
   NETADDR=${IPADDR%.*}
 fi
+
 
 
 
@@ -98,7 +109,6 @@ chmod 644 /etc/shadow
 
 
 
-
 ###############################################################################
 ### Functions
 ###############################################################################
@@ -113,117 +123,6 @@ function fCmd() {
     read answer
     [ -n "$(echo $answer | grep -i '^y')" ] || [ -z "$answer" ] && fCmd $cmd
   fi
-}
-
-function fInstallUsbPackages() {
-  if [ -z "$(opkg list-installed | grep 'block-mount')" ]; then
-    echo "* Checking for updates, please wait..."
-    fCmd opkg update
-    
-    echo "* Package USB 3.0 disk management"
-    fCmd opkg install kmod-usb-core kmod-usb2 kmod-usb3 kmod-usb-storage kmod-usb-storage-uas
-    echo "* Package ext4/FAT"
-    fCmd opkg install kmod-fs-ext4 kmod-fs-vfat
-    echo "* Package mounted partitions"
-    fCmd opkg install block-mount
-    
-    echo "* Package exFAT/ntfs"
-#    echo "* Do not install packages WPA3, SQM QoS, Acme, uHTTPd, IKEv2/IPsec with strongSwan, Collectd/Stats, Adblock, Watchcat, mSMTP!"
-    fCmd opkg install kmod-fs-exfat libblkid ntfs-3g
-    echo "* Package hd-idle"
-    fCmd opkg install luci-app-hd-idle
-#    if [ $WWAN -eq 1 ]; then
-#      echo "* Package USB Huawei Modem 4G/LTE with NCM protocol"
-#      opkg install kmod-usb-net-rndis usb-modeswitch
-#      opkg install comgt-ncm kmod-usb-net-huawei-cdc-ncm luci-proto-ncm usb-modeswitch
-#    fi
-#    if [ $WPA3 -eq 1 ]; then
-#      echo "* Package WPA2/WPA3 Personal (PSK/SAE) mixed mode"
-#      opkg remove --autoremove wpad-basic > /dev/null 2>&1
-#      opkg install wpad-openssl
-#    fi
-    echo "* Package SFTP fileserver"
-    fCmd opkg install openssh-sftp-server
-#    opkg install luci-app-samba4
-#    opkg install luci-app-ddns
-#    opkg install ipset
-#    opkg install kmod-ipt-nathelper-rtsp kmod-ipt-raw
-#    if [ $SQM -eq 1 ]; then
-#      echo "* Package SQM QoS (aka Smart Queue Management)"
-#      opkg install luci-app-sqm
-#    fi
-#    if [ $STATS -eq 1 ]; then
-#      echo "* Package Satistics with collectd"
-#      opkg install luci-app-statistics collectd-mod-rrdtool collectd-mod-processes collectd-mod-sensors
-#    fi
-#    opkg install luci-ssl-openssl curl ca-bundle
-#    opkg install luci-app-acme
-#    opkg install luci-app-uhttpd
-#    opkg install strongswan-full
-#    opkg install luci-app-adblock
-#    opkg install luci-app-watchcat
-#    opkg install msmtp
-    echo "* Package wget"
-    fCmd opkg install wget
-  fi
-}
-
-
-function fMountPartitions() {
-  local USBDEV="$1" DEVSWAP="${USBDEV}1" DEVROOT="${USBDEV}2" DEVDATA="${USBDEV}3"
-
-  echo "* UCI config fstab"
-  uci -q del fstab.@swap[-1]
-  uci add fstab swap
-  uci set fstab.@swap[-1]=swap
-  uci set fstab.@swap[-1].enabled='1'
-  uci set fstab.@swap[-1].device="$DEVSWAP"
-
-  # fstab.@mount[1].target='/overlay'
-  if [ -n "$(uci show | grep 'fstab.*/overlay')" ]; then
-    I=$(echo "$(uci show | grep 'fstab.*/overlay')" | awk -F'[][]' '{print $2}')
-    uci -q del fstab.@mount[$I]
-  fi
-  eval $(block info "$DEVROOT" | grep -o -e "UUID=\S*")
-  uci add fstab mount
-  uci set fstab.@mount[-1]=mount
-  uci set fstab.@mount[-1].enabled='1'
-  #uci set fstab.@mount[-1].device="$DEVROOT"
-  uci set fstab.@mount[-1].uuid="$UUID"
-  uci set fstab.@mount[-1].target='/overlay'
-  uci set fstab.@mount[-1].options='rw,sync,noatime'
-  uci set fstab.@mount[-1].enabled_fsck='1'
-
-  # fstab.@mount[2].target='/mnt/data'
-  if [ -n "$(uci show | grep -E 'fstab.*/mnt/data')" ]; then
-    I=$(echo "$(uci show | grep -E 'fstab.*/mnt/data')" | awk -F'[][]' '{print $2}')
-    uci -q del fstab.@mount[$I]
-  fi
-  eval $(block info "$DEVDATA" | grep -o -e "UUID=\S*")
-  uci add fstab mount
-  uci set fstab.@mount[-1]=mount
-  uci set fstab.@mount[-1].enabled='1'
-  #uci set fstab.@mount[-1].device="$DEVDATA"
-  uci set fstab.@mount[-1].uuid="$UUID"
-  uci set fstab.@mount[-1].target="/mnt/data"
-  uci set fstab.@mount[-1].options='rw,noatime'
-  
-  uci commit fstab
-
-
-  echo "* Enable all mounted partitions"
-  for L in $(uci show fstab); do
-    # fstab.@swap[0].enabled='0'
-    # fstab.@mount[1].enabled='0'
-    I=$(echo "$L" | awk -F'[][]' '{print $2}')
-    if [ $(echo "$L" | grep 'swap' | grep 'enable') ]; then
-      uci set fstab.@swap[$I].enabled='1'
-    elif [ $(echo "$L" | grep 'mount' | grep 'enable') ]; then
-      uci set fstab.@mount[$I].enabled='1'
-    fi
-  done
-  uci commit fstab
-  echo "* Please check mounted partitions http://openwrt/cgi-bin/luci/admin/system/mounts"
 }
 
 
@@ -290,7 +189,7 @@ else
   uci commit wireless
   wifi down radio1 && sleep 3 && wifi up radio1
   echo "* Hotspot <$H_WIFI_SSID> as of wan zone is setup."
-  echo "* Please check wireless network http://openwrt/cgi-bin/luci/admin/network/wireless"
+  echo "* Please check wireless network http://$HOSTNAME/cgi-bin/luci/admin/network/wireless"
   
   echo "* "
   echo -n "* Press <enter> to test internet connection..."
@@ -316,328 +215,8 @@ fi
 ##### Create and moving Rootfs & Swap on USB storage (create partitions, format, copy, mount)
 ###############################################################################
 
-if [ $USBREBOOT -eq 1 ]; then
-  echo "* Create and moving Rootfs & Swap on new USB storage"
-  answer="y"
-else
-  echo -n "* Create and moving Rootfs & Swap on new USB storage? [y/N] "
-  read answer
-fi
-if [ -n "$(echo $answer | grep -i '^y')" ]; then
-  echo -n "* Please unplug USB storage <enter to continue>..."
-  read answer
-
-  if [ -z "$(opkg list-installed | grep lsblk)" ]; then
-    fInstallUsbPackages
-    echo "* Package disk utilities"
-    fCmd opkg install usbutils e2fsprogs dosfstools wipefs fdisk lsblk
-  fi
-
-  echo -n "* Please plug back in USB storage <enter to continue>..."
-  read answer
-
-  echo "* "
-  echo "* List of available USB devices: "
-  echo "* "
-  fdisk -l /dev/sd[a-d] | grep -e "^Disk" -e "^Device" -e "^\/" | grep -v "identifier"
-  echo "* "
-  lsblk -f /dev/sd[a-d]
-  echo "* "
-  
-  if [ -z "$USBDEV" ]; then
-    USBDEV="/dev/sda"
-  fi
-  echo -n "* Enter USB device? <$USBDEV> "
-  read answer
-  if [ -n "$answer" ]; then
-    USBDEV=$answer
-  fi
-  DEVSWAP="${USBDEV}1"
-  DEVROOT="${USBDEV}2"
-  DEVDATA="${USBDEV}3"
-  FSRAM=512
-  FSROOT=4
-  # Disk size - space for root partition (ignore swap space, too small)
-  FSDATA=$(($(fdisk -l $USBDEV | grep "^Disk $USBDEV" | cut -d' ' -f3 | cut -d'.' -f1) - $FSROOT))
-
-  echo "* Unmount all 3 partitions on $USBDEV"
-  uci -q set fstab.@swap[0].enabled='0'
-  # fstab.@mount[1].target='/overlay'
-  if [ -n "$(uci show | grep 'fstab.*/overlay')" ]; then
-    I=$(echo "$(uci show | grep 'fstab.*/overlay')" | awk -F'[][]' '{print $2}')
-    uci set fstab.@mount[$I].enabled='0'
-  fi
-  # fstab.@mount[2].target='/mnt/data'
-  if [ -n "$(uci show | grep 'fstab.*/mnt/data')" ]; then
-    I=$(echo "$(uci show | grep 'fstab.*/mnt/data')" | awk -F'[][]' '{print $2}')
-    uci set fstab.@mount[$I].enabled='0'
-  fi
-  uci commit fstab
-  block umount > /dev/null
-  
-
-
-
-  if [ $USBREBOOT -eq 1 ]; then
-    echo "* Built-in USB device for $USBDEV"
-    answer="y"
-  else
-    echo -n "* Built-in USB device for $USBDEV? [y/N] "
-    read answer
-  fi
-  if [ -n "$(echo $answer | grep -i '^y')" ]; then
-
-    if [ $USBWIPE -eq 0 ]; then
-      echo "* Wiping all signatures for $USBDEV"
-      wipefs --all --force $USBDEV > /dev/null
-      sleep 2
-
-#      echo "* Delete all 3 partitions on $USBDEV"
-#      (
-#      echo d # Delete a partition
-#      echo   # Partition number
-#      echo d # Delete a partition
-#      echo   # Partition number
-#      echo d # Delete a partition
-#      echo   # Partition number
-#      echo w # Write changes
-#      ) | fdisk $USBDEV > /dev/null
-#      sleep 2
-
-      echo "* "
-      echo "* "
-      echo "* "
-      echo -n "* Reboot to complete wipefs on $USBDEV? [y/N] "
-      read answer
-      if [ -n "$(echo $answer | grep -i '^y')" ]; then
-        echo "USBREBOOT=1" >> .env
-        echo "USBWIPE=1" >> .env
-        echo "USBDEV=$USBDEV" >> .env
-        reboot
-        exit 0
-      else
-        echo -n "* Please unplug and plug back in $USBDEV <enter to continue>..."
-        read answer
-      fi
-    fi
-
-
-
-
-    if [ $USBBUILT -eq 0 ]; then
-      (
-      echo o # Create a new empty DOS partition table
-      echo w # Write changes
-      ) | fdisk $USBDEV > /dev/null
-      sleep 2
-    
-      SIZE=$(($(free | grep Mem | awk '{print $2}') / 1024))
-      echo "* Info: Double RAM for machines with 512MB of RAM or less than, and same with more."
-      echo "* Current RAM: ${SIZE}MB"
-      if [ $SIZE -lt 499 ]; then
-        SIZE=$((SIZE * 2))
-      else
-        SIZE=512
-      fi
-      echo -n "* Enter swap partition size? <${SIZE}MB> "
-      read answer
-      if [ -n "$answer" ]; then
-        SIZE=$answer
-      fi
-      FSRAM=$SIZE
-      (
-      echo o # Create a new empty DOS partition table
-      echo n # Add a new partition
-      echo p # Primary partition
-      echo   # Partition number
-      echo   # First sector (Accept default: 1)
-      echo "+${SIZE}M"  # Last sector (Accept default: varies)
-      echo w # Write changes
-      ) | fdisk $USBDEV > /dev/null
-      sleep 2
-
-      SIZE=4
-      echo -n "* Enter root partition size? <${SIZE}GB> "
-      read answer
-      if [ -n "$answer" ]; then
-        SIZE=$answer
-      fi
-      FSROOT=$SIZE
-      SIZE=$((SIZE * 1024))
-      (
-      echo n # Add a new partition
-      echo p # Primary partition
-      echo   # Partition number
-      echo   # First sector (Accept default: 1)
-      echo "+${SIZE}M"  # Last sector (Accept default: varies)
-      echo w # Write changes
-      ) | fdisk $USBDEV > /dev/null
-      sleep 2
-
-      FSDATA=$(($(fdisk -l $USBDEV | grep "^Disk $USBDEV" | cut -d' ' -f3 | cut -d'.' -f1) - $FSROOT))
-      echo "* Create data partition of <${FSDATA}GB>"
-      (
-      echo n # Add a new partition
-      echo p # Primary partition
-      echo   # Partition number
-      echo   # First sector (Accept default: 1)
-      echo   # Last sector (Accept default: varies)
-      echo w # Write changes
-      ) | fdisk $USBDEV > /dev/null
-      sleep 2
-
-      echo "* "
-      echo "* Partitions detail for $USBDEV:"
-      fdisk -l $USBDEV | grep  -e "^Disk" -e "^Device" -e "^\/" | grep -v "identifier"
-      echo "* "
-
-      echo "* "
-      echo "* "
-      echo "* "
-      echo -n "* Reboot to complete partitions creation on $USBDEV? [y/N] "
-      read answer
-      if [ -n "$(echo $answer | grep -i '^y')" ]; then
-        echo "USBBUILT=1" >> .env
-        reboot
-        exit 0
-      else
-        echo -n "* Please unplug and plug back in $USBDEV <enter to continue>..."
-        read answer
-      fi
-    fi
-
-
-
-    # Remove temporary variables
-    sed -i '/^USBREBOOT=/d' .env
-    sed -i '/^USBWIPE=/d' .env
-    sed -i '/^USBBUILT=/d' .env
-    sed -i '/^USBDEV=/d' .env
-
-    echo "* "
-    echo "* Format partitions with swap/ext4/fat32"
-    mkswap $DEVSWAP > /dev/null 2>&1
-    mkfs.ext4 -F -L "rootfs" $DEVROOT > /dev/null 2>&1
-    mkfs.fat -F 32 -n "data" $DEVDATA > /dev/null 2>&1
-    
-    echo "* "
-    echo "* Partitions detail for $USBDEV:"
-    lsblk -f $USBDEV
-    echo "* "
-
-    echo "* Remove Package disk utilities"
-    opkg remove --autoremove usbutils e2fsprogs dosfstools wipefs fdisk lsblk > /dev/null 2>&1
-
-    echo "* "
-    echo "* Add swap of ${FSRAM}MB on $DEVSWAP"
-    echo "* Move overlayfs:/overlay to ${FSROOT}GB on $DEVROOT"
-    echo "* Add free storage of ${FSDATA}GB on $DEVDATA"
-    echo "* "
-    
-    # Rollback overlay partition
-    # /dev/ubi0_1: UUID="e14f77d3-5564-4d4d-b708-842837dc9905" VERSION="w4r0" MOUNT="/overlay" TYPE="ubifs"
-    #mount -t ubifs /dev/ubi0_1 /overlay
-    
-    # Mount swap partition
-    swapon $DEVSWAP
-    
-    # Mount data partition
-    mkdir -p /mnt/data
-    mount -t vfat $DEVDATA /mnt/data > /dev/null
-
-    fMountPartitions $USBDEV
-
-    # Copy rootfs partition
-    echo "* Copy /overlay on $DEVROOT partition..."
-    mkdir -p /mnt/rootfs
-    mount -t ext4 $DEVROOT /mnt/rootfs > /dev/null
-    # Remove existing data
-    rm -Rf /mnt/rootfs/*
-    #tar -C /overlay -cvf - . | tar -C /mnt/rootfs -xf -
-    cp -a -f /overlay/. /mnt/rootfs
-    umount /mnt/rootfs
-    block umount > /dev/null
-    
-    echo "* "
-    echo "* "
-    echo "* "
-    echo -n "* Reboot to complete \"Rootfs & Swap on USB Storage\" <enter to continue>..."
-    read answer
-    reboot
-    exit 0
-  fi
-else
-
-
-
-
-  echo -n "* Rebuild Rootfs on existing USB storage? [y/N] "
-  read answer
-  if [ -n "$(echo $answer | grep -i '^y')" ]; then
-    echo -n "* Please unplug USB storage <enter to continue>..."
-    read answer
-    
-    if [ -z "$(opkg list-installed | grep lsblk)" ]; then
-      fInstallUsbPackages
-      echo "* Package disk utilities"
-      fCmd opkg install usbutils e2fsprogs dosfstools wipefs fdisk lsblk
-    fi
-
-    echo -n "* Please plug back in USB storage <enter to continue>..."
-    read answer
-
-    echo "* "
-    echo "* List of available USB devices: "
-    echo "* "
-    lsblk -f /dev/sd[a-d]
-    echo "* "
-    
-    DEVSWAP=$(block info | grep 'swap' | cut -d':' -f1)
-    echo -n "* Enter swap device? <$DEVSWAP> "
-    read answer
-    if [ -n "$answer" ]; then
-      DEVSWAP=$answer
-    fi
-    DEVROOT=$(block info | grep 'rootfs' | cut -d':' -f1)
-    echo -n "* Enter rootfs device? <$DEVROOT> "
-    read answer
-    if [ -n "$answer" ]; then
-      DEVROOT=$answer
-    fi
-    # Remove last character
-    USBDEV=${DEVROOT%?}
-
-    echo "* "
-    echo "* Format partitions with swap/ext4"
-    mkswap $DEVSWAP > /dev/null 2>&1
-    mkfs.ext4 -F -L "rootfs" $DEVROOT > /dev/null 2>&1
-    
-    echo "* Remove Package disk utilities"
-    opkg remove --autoremove usbutils e2fsprogs dosfstools wipefs fdisk lsblk > /dev/null 2>&1
-
-    fMountPartitions $USBDEV
-
-    # Copy rootfs partition
-    echo "* Copy /overlay on $DEVROOT partition..."
-    mkdir -p /mnt/rootfs
-    mount -t ext4 $DEVROOT /mnt/rootfs > /dev/null
-    # Remove existing data
-    rm -Rf /mnt/rootfs/*
-    #tar -C /overlay -cvf - . | tar -C /mnt/rootfs -xf -
-    cp -a -f /overlay/. /mnt/rootfs
-    umount /mnt/rootfs
-    block umount > /dev/null
-
-    echo "* "
-    echo "* "
-    echo "* "
-    echo -n "* Reboot to complete \"Rootfs & Swap on USB Storage\" <enter to continue>..."
-    read answer
-    reboot
-    exit 0
-  fi
-fi
-rm -Rf /mnt/rootfs
+~/opkg-install_rootfs2usb.sh
+[ $? -ne 0 ] && exit $?
 
 
 
@@ -800,15 +379,9 @@ uci set network.lan.netmask='255.255.255.0'
 # Cloudflare and APNIC
 # Primary DNS: 1.1.1.1
 # Secondary DNS: 1.0.0.1
-# Malware Blocking Only
-# Primary DNS: 1.1.1.2
-# Secondary DNS: 1.0.0.2
-# Malware and Adult Content
-# Primary DNS: 1.1.1.3
-# Secondary DNS: 1.0.0.3
 uci -q del network.lan.dns
-uci add_list network.lan.dns='1.1.1.3'
-uci add_list network.lan.dns='1.0.0.3'
+uci add_list network.lan.dns='9.9.9.9'
+uci add_list network.lan.dns='149.112.112.112'
 uci -q del network.lan.ip6assign
 uci set network.wan.metric='10'
 uci commit network
@@ -825,8 +398,8 @@ uci set network.guest.proto='static'
 uci set network.guest.ipaddr="$NETADDR_GUEST.1"
 uci set network.guest.netmask='255.255.255.0'
 uci -q del network.guest.dns
-uci add_list network.guest.dns='1.1.1.3'
-uci add_list network.guest.dns='1.0.0.3'
+uci add_list network.guest.dns='9.9.9.9'
+uci add_list network.guest.dns='149.112.112.112'
 uci commit network
 
 echo "* UCI config dhcp"
@@ -837,15 +410,17 @@ uci set dhcp.lan.limit='150'
 uci set dhcp.lan.leasetime='12h'
 uci set dhcp.lan.force='1'
 # Disable DHCPv6 Server
-uci -q del dhcp.lan.ra
 uci -q del dhcp.lan.dhcpv6
+uci -q del dhcp.lan.ra
 uci -q del dhcp.lan.ra_management
+uci -q del network.lan.delegate
 uci set dhcp.guest=dhcp
 uci set dhcp.guest.interface='guest'
 uci set dhcp.guest.start='100'
 uci set dhcp.guest.limit='50'
 uci set dhcp.guest.leasetime='1h'
 uci commit dhcp
+uci commit network
 
 echo "* UCI config firewall"
 uci set firewall.@defaults[0].synflood_protect='1'
@@ -968,8 +543,7 @@ uci set wireless.radio0.bursting='1'
 uci set wireless.radio0.ff='1'
 uci set wireless.radio0.compression='1'
 uci set wireless.radio0.turbo='1'
-uci set wireless.radio0.channel='auto'
-uci set wireless.radio0.channels='116 120 124 128 132'
+uci set wireless.radio0.channel='52'
 uci set wireless.radio0.cell_density='0'
 uci set wireless.radio0.disabled='0'
 uci set wireless.default_radio0.mode='ap'
@@ -1020,7 +594,7 @@ uci set wireless.wifinet5.key="$WIFI_GUEST_KEY"
 uci set wireless.wifinet5.encryption='psk-mixed'
 uci set wireless.wifinet5.isolate='1'
 
-if [ $80211R -eq 1 ]; then
+if [ $WIFI_80211R -eq 1 ]; then
   # Enable 802.11r Fast Transition
   # Enable fast roaming among access points that belong to the same Mobility Domain
   uci set wireless.default_radio0.ieee80211r='1'
@@ -1182,7 +756,7 @@ echo "* Package hd-idle"
 fCmd opkg install luci-app-hd-idle
 echo "* UCI config hd-idle"
 uci set hd-idle.@hd-idle[0]=hd-idle
-uci set hd-idle.@hd-idle[0].enabled='1'
+uci set hd-idle.@hd-idle[0].enabled='0'
 uci set hd-idle.@hd-idle[0].disk='sda'
 uci set hd-idle.@hd-idle[0].idle_time_unit='minutes'
 uci set hd-idle.@hd-idle[0].idle_time_interval='10'
@@ -1221,15 +795,17 @@ if [ $WWAN -eq 1 ]; then
 fi
 
 echo "* Package WPA2/WPA3 Personal (PSK/SAE) mixed mode"
-opkg remove --autoremove wpad-basic > /dev/null 2>&1
+opkg remove --autoremove wpad-* > /dev/null 2>&1
 fCmd opkg install wpad-basic-wolfssl
 echo "* UCI config WPA2/WPA3 (PSK/SAE)"
 # Fix iOS 13.1.3 connected: option auth_cache '1'
-uci set wireless.default_radio0.auth_cache='1'
-uci set wireless.default_radio0.ieee80211w='0'
+#uci set wireless.default_radio0.auth_cache='1'
+#uci set wireless.default_radio0.ieee80211w='0'
+uci -q del wireless.default_radio0.ieee80211w
 uci set wireless.default_radio0.encryption='sae-mixed'
-uci set wireless.default_radio1.auth_cache='1'
-uci set wireless.default_radio1.ieee80211w='0'
+#uci set wireless.default_radio1.auth_cache='1'
+#uci set wireless.default_radio1.ieee80211w='0'
+uci -q del wireless.default_radio1.ieee80211w
 uci set wireless.default_radio1.encryption='sae-mixed'
 
 if [ $MESH -eq 1 ]; then
@@ -1397,7 +973,7 @@ fi
 
 if [ $STATS -eq 1 ]; then
   echo "* Package Satistics with collectd"
-  fCmd opkg install luci-app-statistics collectd-mod-rrdtool collectd-mod-processes collectd-mod-sensors
+  fCmd opkg install luci-app-statistics collectd-mod-rrdtool collectd-mod-processes collectd-mod-sensors collectd-mod-ping
   echo "* UCI config statistics"
   uci set luci_statistics.collectd_network.enable='1'
   uci set luci_statistics.collectd_network.Forward='0'
@@ -1410,25 +986,44 @@ if [ $STATS -eq 1 ]; then
   uci set luci_statistics.@collectd_network_server[-1].host='0.0.0.0'
   uci set luci_statistics.@collectd_network_server[-1].port='25826'
   
+  uci set luci_statistics.collectd_processes.enable='1'
+  uci set luci_statistics.collectd_processes.Processes='uhttpd dnsmasq dropbear wireguard udhcpc'
+  uci set luci_statistics.collectd_sensors.enable='1'
+  uci -q del luci_statistics.collectd_interface.Interfaces
+  uci add_list luci_statistics.collectd_interface.Interfaces='br-lan'
+  uci add_list luci_statistics.collectd_interface.Interfaces='eth0.2'
+  uci -q del luci_statistics.collectd_interface.IgnoreSelected
+  
+  uci set luci_statistics.collectd_network.enable="1"
+  uci set luci_statistics.collectd_ping.enable="1"
+  uci set luci_statistics.collectd_ping.Hosts="8.8.8.8 8.8.4.4"
+
   uci set luci_statistics.collectd_rrdtool.enable='1'
-  uci set luci_statistics.collectd_rrdtool.DataDir='/tmp/rrd'
+  uci set luci_statistics.collectd_rrdtool.DataDir='/mnt/data/rrd'
   uci set luci_statistics.collectd_rrdtool.RRASingle='1'
+  uci -q del luci_statistics.collectd_rrdtool.RRATimespans
+  uci add_list luci_statistics.collectd_rrdtool.RRATimespans='1hour'
+  uci add_list luci_statistics.collectd_rrdtool.RRATimespans='1day'
+  uci add_list luci_statistics.collectd_rrdtool.RRATimespans='1week'
+  uci add_list luci_statistics.collectd_rrdtool.RRATimespans='1month'
+  uci add_list luci_statistics.collectd_rrdtool.RRATimespans='1year'
   uci set luci_statistics.collectd_rrdtool.RRARows='100'
   uci set luci_statistics.collectd_rrdtool.CacheTimeout='100'
-  
-  uci set luci_statistics.collectd_processes.enable='1'
-  uci set luci_statistics.collectd_processes.Processes='uhttpd dnsmasq dropbear ipsec udhcpc'
-  uci set luci_statistics.collectd_sensors.enable='1'
-  uci set luci_statistics.collectd_thermal.enable='1'
   uci commit luci_statistics
+  
+  mkdir -p /mnt/data/rrd
+  /etc/init.d/luci_statistics restart
+  /etc/init.d/collectd restart
+  /etc/init.d/rpcd restart
 fi
 
 echo "* Package for ACME script"
-fCmd opkg install curl ca-bundle
+fCmd opkg install wget ca-bundle
 echo "* Install ACME script"
-curl -sS https://raw.githubusercontent.com/Neilpang/acme.sh/master/acme.sh > /etc/acme/acme.sh
+wget -qO /etc/acme/acme.sh  https://raw.githubusercontent.com/Neilpang/acme.sh/master/acme.sh
 chmod a+x /etc/acme/acme.sh
-/etc/acme/acme.sh --home /etc/acme --install --accountemail "$MAIL_ADR"
+/etc/acme/acme.sh --home /etc/acme --install --accountemail $MAIL_ADR
+/etc/acme/acme.sh --home /etc/acme --register-account -m $MAIL_ADR
 /etc/acme/acme.sh --home /etc/acme --upgrade --auto-upgrade
 echo '/etc/acme #ACME certificates and scripts' >> /etc/sysupgrade.conf
 
@@ -1450,12 +1045,13 @@ uci set acme.local.domains="$DOMAIN"
 uci commit acme
 
 echo "* Get ACME certificates"
+/etc/init.d/uhttpd stop
 if [ $FW_FWD_NAS_CERTS -eq 1 ]; then
   /root/fw-redirect.sh Allow-http=on Allow-NAS-http=off
 else
   /root/fw-redirect.sh Allow-http=on
 fi
-/etc/acme/acme.sh --home /etc/acme --issue --server letsencrypt -d $DOMAIN -w /www
+/etc/acme/acme.sh --home /etc/acme --issue --standalone -d $DOMAIN -w /www --keylength 2048
 if [ $FW_FWD_NAS_CERTS -eq 1 ]; then
   /root/fw-redirect.sh Allow-http=off Allow-NAS-http=on
 else
@@ -1470,7 +1066,7 @@ uci set uhttpd.main.key="/etc/acme/$DOMAIN/$DOMAIN.key"
 uci set uhttpd.main.cert="/etc/acme/$DOMAIN/$DOMAIN.cer"
 uci commit uhttpd
 chmod 777 /etc/acme/$DOMAIN
-
+/etc/init.d/uhttpd restart
 
 
 
@@ -1481,18 +1077,24 @@ chmod 777 /etc/acme/$DOMAIN
 
 
 echo "* Package adblock"
-fCmd opkg install luci-app-adblock
+fCmd opkg install luci-app-adblock tcpdump
 echo "* UCI config adblock"
 uci set adblock.global.adb_enabled='1'
-uci set adblock.global.adb_trigger='lan'
+uci set adblock.global.adb_trigger='wan'
+uci set adblock.global.adb_report='1'
+uci set adblock.global.adb_dnsdir='/mnt/data/adblock/dns'
+uci set adblock.global.adb_reportdir='/mnt/data/adblock/report'
+uci set adblock.global.adb_tmpbase='/mnt/data/adblock/temp'
+uci set adblock.global.adb_backupdir='/mnt/data/adblock/backup'
 uci -q del adblock.global.adb_sources
 uci add_list adblock.global.adb_sources='adaway'
 uci add_list adblock.global.adb_sources='adguard'
-uci add_list adblock.global.adb_sources='bitcoin'
-uci add_list adblock.global.adb_sources='malwarelist'
-uci add_list adblock.global.adb_sources='youtube'
+uci add_list adblock.global.adb_sources='disconnect'
+uci add_list adblock.global.adb_sources='reg_fr'
 uci add_list adblock.global.adb_sources='yoyo'
 uci commit adblock
+mkdir -p /mnt/data/adblock/temp
+
 
 echo "* Block ip addresses that track attacks, spyware, viruses"
 fCmd opkg install ipset
@@ -1516,10 +1118,10 @@ EOF
 echo "* Enable crontab 'Scheduled Taks'"
 /etc/init.d/cron enable
 cat << 'EOF' > /etc/crontabs/root
-# Backup config file every Friday @05:50
-50 5 * * 5 source /etc/os-release && rm -f /mnt/data/backup-$VERSION-$HOSTNAME* && sysupgrade -b /mnt/data/backup-$VERSION-$HOSTNAME.$(uci get dhcp.@dnsmasq[0].domain)-$(date +%F).tar.gz
-# Packages upgrade daily @05:55
-55 5 * * * /root/opkg-upgrade.sh
+# Backup config file every Friday @06:00
+0 6 * * 5 source /etc/os-release && rm -f /mnt/data/backup-$VERSION-$HOSTNAME* && sysupgrade -b /mnt/data/backup-$VERSION-$HOSTNAME.$(uci get dhcp.@dnsmasq[0].domain)-$(date +%F).tar.gz
+# Packages upgrade daily @02:00
+0 2 * * * /root/opkg-upgrade.sh
 # Update ip addresses list that track attacks, spyware, viruses daily @03:00
 0 3 * * * wget --timeout=5 -qO /etc/blocklist-ipsets.txt https://raw.githubusercontent.com/firehol/blocklist-ipsets/master/firehol_level3.netset
 # Renew WiFi Guest password every year @00:00
@@ -1527,7 +1129,7 @@ cat << 'EOF' > /etc/crontabs/root
 # Check wifi devices every 1 min
 */1 * * * * /root/healthcheck-wifi.sh
 # Check url(s) status every 3 mins
-*/3 * * * * /root/healthcheck-url.sh
+#*/3 * * * * /root/healthcheck-url.sh
 EOF
 
 if [ $WWAN -eq 1 ]; then
@@ -1541,20 +1143,25 @@ fi
 
 if [ $FW_FWD_NAS_CERTS -eq 1 ]; then
   echo "# Check NAS status and Port Forwards http/https every 3 mins" >> /etc/crontabs/root
-  echo "*/3 * * * * /root/healthcheck-nas.sh" >> /etc/crontabs/root
-  echo "# Certificate renew every 1st of the month @03:00" >> /etc/crontabs/root
-  echo "0 3 1 * * /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on Allow-NAS-http=off && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force >> /etc/acme/log.txt 2>&1; /root/fw-redirect.sh Allow-http=off Allow-NAS-http=on && /usr/sbin/ipsec restart" >> /etc/crontabs/root
+  echo "#*/3 * * * * /root/healthcheck-nas.sh" >> /etc/crontabs/root
+  echo "# Certificates renew every 1st of the month @03:00" >> /etc/crontabs/root
+  echo "0 3 1 * * /etc/init.d/uhttpd stop; /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1; /root/fw-redirect.sh Allow-http=on Allow-NAS-http=off; /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force >> /etc/acme/log.txt 2>&1; /root/fw-redirect.sh Allow-http=off Allow-NAS-http=on; /etc/init.d/uhttpd restart; /etc/init.d/ipsec restart" >> /etc/crontabs/root
 else
   rm -f /root/healthcheck-nas.sh
-  echo "# Certificate renew every 1st of the month @03:00" >> /etc/crontabs/root
-  echo "0 3 1 * * /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force >> /etc/acme/log.txt 2>&1; /root/fw-redirect.sh Allow-http=off && /usr/sbin/ipsec restart" >> /etc/crontabs/root
+  echo "# Certificates renew every 1st of the month @03:00" >> /etc/crontabs/root
+  echo "0 3 1 * * /etc/init.d/uhttpd stop; /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1; /root/fw-redirect.sh Allow-http=on; /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force >> /etc/acme/log.txt 2>&1; /root/fw-redirect.sh Allow-http=off; /etc/init.d/uhttpd start; /etc/init.d/ipsec restart" >> /etc/crontabs/root
+fi
+if [ -f /root/dl-certs_*.sh ]; then
+  fCmd opkg install sshpass
+  echo "* Certificates download every 1st of the month @03:10" >> /etc/crontabs/root
+  echo "10 3 1 * * $(ls /root/dl-certs_*.sh) >> /var/log/dl-certs.log" >> /etc/crontabs/root
 fi
 
 echo "* Package watchcat (periodic reboot or reboot on internet drop)"
 fCmd opkg install luci-app-watchcat
 echo "* UCI config watchcat"
-#uci set system.@watchcat[0].period='5m'
-#uci set system.@watchcat[0].pingperiod='30'
+uci -q del watchcat.@watchcat[0]
+uci commit watchcat
 
 echo "* Package mSMTP mail client"
 fCmd opkg install msmtp
@@ -1651,12 +1258,14 @@ echo '/root/.profile #my profile with opkg update check script' >> /etc/sysupgra
 echo '/root/.bash_colors #shell colors syntax script' >> /etc/sysupgrade.conf
 
 
-echo "#nfs-kernel-server http://archive.openwrt.org/releases/packages-17.01/$OPENWRT_ARCH/packages/nfs-kernel-server_2.1.1-1_$OPENWRT_ARCH.ipk" > opkg-downgrade.conf
-if [ "$OPENWRT_ARCH" == "arm_cortex-a9_vfpv3" ]; then
-  echo "#mwlwifi-firmware-88w8864 https://github.com/eduperez/mwlwifi_LEDE/releases/dvi upownload/31d9386/mwlwifi-firmware-88w8864_20181210-31d93860-1_arm_cortex-a9_vfpv3.ipk" >> opkg-downgrade.conf
-  echo "#kmod-mwlwifi kmod-mwlwifi_4.14.162+2018-06-15-8683de8e-1_arm_cortex-a9_vfpv3.ipk" >> opkg-downgrade.conf
-elif [ "$OPENWRT_ARCH" == "mips_24kc" ]; then
-  echo "#ath10k-firmware-qca988x-ct http://archive.openwrt.org/releases/18.06.1/packages/mips_24kc/base/ath10k-firmware-qca988x-ct_2018-05-12-952afa49-1_mips_24kc.ipk" >> opkg-downgrade.conf
+if [ ! -f opkg-downgrade.conf ]; then
+  echo "#nfs-kernel-server http://archive.openwrt.org/releases/packages-17.01/$OPENWRT_ARCH/packages/nfs-kernel-server_2.1.1-1_$OPENWRT_ARCH.ipk" > opkg-downgrade.conf
+  if [ "$OPENWRT_ARCH" == "arm_cortex-a9_vfpv3" ]; then
+    echo "#mwlwifi-firmware-88w8864 https://github.com/eduperez/mwlwifi_LEDE/releases/dvi upownload/31d9386/mwlwifi-firmware-88w8864_20181210-31d93860-1_arm_cortex-a9_vfpv3.ipk" >> opkg-downgrade.conf
+    echo "#kmod-mwlwifi kmod-mwlwifi_4.14.162+2018-06-15-8683de8e-1_arm_cortex-a9_vfpv3.ipk" >> opkg-downgrade.conf
+  elif [ "$OPENWRT_ARCH" == "mips_24kc" ]; then
+    echo "#ath10k-firmware-qca988x-ct http://archive.openwrt.org/releases/18.06.1/packages/mips_24kc/base/ath10k-firmware-qca988x-ct_2018-05-12-952afa49-1_mips_24kc.ipk" >> opkg-downgrade.conf
+  fi
 fi
 echo '/root/*.ipk #upgrade opkg exception packages' >> /etc/sysupgrade.conf
 
@@ -1679,31 +1288,36 @@ find /etc -name *-opkg -print | xargs rm > /dev/null 2>&1
 echo "* "
 echo "* "
 echo "******************************"
-echo " /!\ After reboot checks /!\\"
+echo " /!\ After reboot checks /!\\ "
 echo "******************************"
 echo "* "
 echo "* "
-echo "* Please check swap mounted partition http://openwrt/cgi-bin/luci/admin/system/mounts"
+echo "* Please check swap mounted partition http://$HOSTNAME/cgi-bin/luci/admin/system/mounts"
 echo "* "
 echo "* "
 echo "* Get ACME certificates command line to run, if encountered errors during installation!"
+echo "* "
 if [ $FW_FWD_NAS_CERTS -eq 1 ]; then
   echo "* Certificates issue:"
-  echo "/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on Allow-NAS-http=off && /etc/acme/acme.sh --home /etc/acme --issue --server letsencrypt -d $DOMAIN -w /www 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off Allow-NAS-http=on && /usr/sbin/ipsec restart"
+  echo "/etc/init.d/uhttpd stop; /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1; /root/fw-redirect.sh Allow-http=on Allow-NAS-http=off; /etc/acme/acme.sh --home /etc/acme --issue --server letsencrypt -d $DOMAIN -w /www --keylength 2048 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off Allow-NAS-http=on; /etc/init.d/uhttpd restart 2> /dev/null; /etc/init.d/ipsec restart"
   echo "* "
   echo "* Certificates renew:"
-  echo "/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on Allow-NAS-http=off && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off Allow-NAS-http=on && /usr/sbin/ipsec restart"
+  echo "/etc/init.d/uhttpd stop; /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1; /root/fw-redirect.sh Allow-http=on Allow-NAS-http=off; /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off Allow-NAS-http=on; /etc/init.d/uhttpd restart 2> /dev/null; /etc/init.d/ipsec restart"
 else
   echo "* Certificates issue:"
-  echo "/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on && /etc/acme/acme.sh --home /etc/acme --issue --server letsencrypt -d $DOMAIN -w /www 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off && /usr/sbin/ipsec restart"
+  echo "/etc/init.d/uhttpd stop; /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1; /root/fw-redirect.sh Allow-http=on; /etc/acme/acme.sh --home /etc/acme --issue --server letsencrypt -d $DOMAIN -w /www --keylength 2048 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off; /etc/init.d/uhttpd restart 2> /dev/null; /etc/init.d/ipsec restart"
   echo "* "
   echo "* Certificates renew:"
-  echo "/etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off && /usr/sbin/ipsec restart"
+  echo "/etc/init.d/uhttpd stop; /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1; /root/fw-redirect.sh Allow-http=on; /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off; /etc/init.d/uhttpd restart 2> /dev/null; /etc/init.d/ipsec restart"
+fi
+if [ -f /root/dl-certs_*.sh ]; then
+  echo "* "
+  echo "* Certificates download:"
+  ls /root/dl-certs_*.sh
 fi
 echo "* "
 echo "* "
 
-echo "* "
 echo "* End time: $(date)"
 runend=$(date +%s)
 runtime=$((runend-runstart))

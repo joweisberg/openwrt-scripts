@@ -175,7 +175,8 @@ ETH_DNS=$(ip route | grep '^default' | grep $ETH_DEV | awk '{print $3}')
 if [ -z $ETH_DNS ]; then
   ETH_DNS=$(ip route | grep -v '^default' | grep "$ETH_DEV proto kernel" | awk '{print $9}')
 fi
-ETH_GTW=$(curl -4s wgetip.com)
+#ETH_GTW=$(curl -4s wgetip.com)
+ETH_GTW=$(wget -4qO - wgetip.com)
 echo "$(echored " Local domain: ")$(cat /etc/resolv.conf | grep '^search' | awk '{print $2}')"
 echo "$(echored " IPv4 network: ")$ETH_ADR $ETH_DNS [$ETH_DEV]"
 echo "$(echored " IPv4 outside: ")$ETH_GTW [$(uci get ddns.myddns_ipv4.lookup_host)]"
@@ -245,7 +246,8 @@ for L in $(cat /tmp/mac-lan.list /tmp/mac-wlan.list); do
   if [ -z "$host" ]; then
     host="*"
   fi
-  vendor=$(sleep 1 && curl --silent https://api.maclookup.app/v2/macs/$mac | cut -d',' -f4 | cut -d'"' -f4)
+  #vendor=$(sleep 1 && curl --silent https://api.maclookup.app/v2/macs/$mac | cut -d',' -f4 | cut -d'"' -f4)
+  vendor=$(sleep 1 && wget -4qO - https://api.maclookup.app/v2/macs/$mac | cut -d',' -f4 | cut -d'"' -f4)
 
   # br-lan [08h 53m] 70:fc:8f:73:b7:90 192.168.10.254 fbx-player [FREEBOX SAS]
   printf ' %-7s %-9s %-17s %-15s %s [%s]\n' "$interface" "$leasetime" "$mac" "$ip" "$host" "$vendor" | sed "s/[!!]/$(echoyellow "!!")/g"

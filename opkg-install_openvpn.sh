@@ -204,7 +204,7 @@ uci -q del openvpn.server
 uci set openvpn.server=openvpn
 uci set openvpn.server.enabled='1'
 uci set openvpn.server.port='1194'
-uci set openvpn.server.proto='udp4'
+uci set openvpn.server.proto='udp'
 uci set openvpn.server.dev="tun$i"
 uci set openvpn.server.ca="$OVPN_KEYS/ca.crt"
 uci set openvpn.server.cert="$OVPN_KEYS/server.crt"
@@ -259,26 +259,30 @@ fi
 uci commit firewall
 
 # Add vpn forwarding
-uci add firewall forwarding
-uci set firewall.@forwarding[-1].src='vpn'
-uci set firewall.@forwarding[-1].dest='lan'
-uci add firewall forwarding
-uci set firewall.@forwarding[-1].src='vpn'
-uci set firewall.@forwarding[-1].dest='wan'
-uci add firewall forwarding
-uci set firewall.@forwarding[-1].src='lan'
-uci set firewall.@forwarding[-1].dest='vpn'
-uci commit firewall
+if [ $(uci show firewall | grep forwarding | grep vpn | wc -l) -eq 0 ]; then
+  uci add firewall forwarding
+  uci set firewall.@forwarding[-1].src='vpn'
+  uci set firewall.@forwarding[-1].dest='lan'
+  uci add firewall forwarding
+  uci set firewall.@forwarding[-1].src='vpn'
+  uci set firewall.@forwarding[-1].dest='wan'
+  uci add firewall forwarding
+  uci set firewall.@forwarding[-1].src='lan'
+  uci set firewall.@forwarding[-1].dest='vpn'
+  uci commit firewall
+fi
 
 # Open OpenVPN port
-uci add firewall rule
-uci set firewall.@rule[-1]=rule
-uci set firewall.@rule[-1].name='Allow-OpenVPN'
-uci set firewall.@rule[-1].src='wan'
-uci set firewall.@rule[-1].proto='udp'
-uci set firewall.@rule[-1].dest_port='1194'
-uci set firewall.@rule[-1].target='ACCEPT'
-uci commit firewall
+if [ -z "$(uci show firewall | grep Allow-OpenVPN)" ]; then
+  uci add firewall rule
+  uci set firewall.@rule[-1]=rule
+  uci set firewall.@rule[-1].name='Allow-OpenVPN'
+  uci set firewall.@rule[-1].src='wan'
+  uci set firewall.@rule[-1].proto='udp'
+  uci set firewall.@rule[-1].dest_port='1194'
+  uci set firewall.@rule[-1].target='ACCEPT'
+  uci commit firewall
+fi
 
 
 
@@ -293,7 +297,7 @@ if [ -n "$(cat .env | grep "^VPN_CLIENT=")" ]; then
   uci set openvpn.server_s2s=openvpn
   uci set openvpn.server_s2s.enabled='1'
   uci set openvpn.server_s2s.port='1195'
-  uci set openvpn.server_s2s.proto='udp4'
+  uci set openvpn.server_s2s.proto='udp'
   uci set openvpn.server_s2s.dev="tun$i"
   uci set openvpn.server_s2s.ca="$OVPN_KEYS/ca.crt"
   uci set openvpn.server_s2s.cert="$OVPN_KEYS/server.crt"
@@ -349,9 +353,6 @@ proto udp
 remote $DOMAIN 1195
 remote-cert-tls server
 resolv-retry 5
-auth SHA1
-data-ciphers AES-256-GCM
-data-ciphers-fallback AES-256-GCM
 nobind
 auth-nocache
 auth-user-pass /etc/openvpn/$DOMAIN.auth
@@ -430,7 +431,7 @@ fi
 if [ -n "$(cat .env | grep "^VPN_SITE=")" ]; then
 
   echo "* Set OpenVPN Client Site config"
-
+  
   # VPN_SITE="https://jdw.root.sx/openvpn/jdwt.root.sx.ovpn|username|password"
   for L in $(cat .env | grep "^VPN_SITE="); do
     # Get the value after =
@@ -461,6 +462,7 @@ if [ -n "$(cat .env | grep "^VPN_SITE=")" ]; then
     # Rename based on remote server name
     REMOTE_SERVER=$(cat /etc/openvpn/$F_NAME.$F_EXT | awk '/^remote /{print $2}')
     mv /etc/openvpn/$F_NAME.$F_EXT /etc/openvpn/$REMOTE_SERVER.$F_EXT
+    F_FULLPATH=/etc/openvpn/$REMOTE_SERVER.$F_EXT
     F_NAME=$REMOTE_SERVER
 
     NAME=$F_NAME
@@ -505,7 +507,7 @@ if [ -n "$(cat .env | grep "^VPN_SITE=")" ]; then
     #uci add_list firewall.@zone[1].network='ovpn_server'
     if [ -n "$(cat /etc/config/firewall | grep 'ovpn_server')" ]; then
       #sed -i "s/vpn$((i-1))/vpn$((i-1)) vpn$i/g" /etc/config/firewall
-      sed -i "s/\tlist network 'ovpn_server'/\tlist network 'ovpn_server'\n\tlist network 'vpn_$NAME'/g" /etc/config/firewall
+      sed -i "s/\tlist network 'ovpn_server'/\tlist network 'ovpn_server'\n\tlist network 'ovpn_$NAME'/g" /etc/config/firewall
     #else
     #  uci add firewall zone
     #  uci set firewall.@zone[-1]=zone

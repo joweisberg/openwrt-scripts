@@ -302,6 +302,9 @@ NAME   FSTYPE LABEL       UUID                                 FSAVAIL FSUSE% MO
 *
 *
 * Do you accept this setup? [Y/n]
+*
+* Start time: Tue Apr 19 07:22:02 UTC 2022
+*
 * UCI config luci
 * UCI config timezone
 * UCI config lan network
@@ -326,7 +329,7 @@ NAME   FSTYPE LABEL       UUID                                 FSAVAIL FSUSE% MO
 * Package WPA2/WPA3 Personal (PSK/SAE) mixed mode
 * UCI config WPA2/WPA3 (PSK/SAE)
 * Package SFTP fileserver
-* Package Samba SMB/CIFS fileserver for 'Network Shares'
+* Package Samba SMB/CIFS fileserver
 * UCI config samba
 * Set Samba as local master = yes
 * Package NFS fileserver
@@ -400,6 +403,8 @@ cp: can't stat 'acme.sh': No such file or directory
 * Please check swap mounted partition http://openwrt/cgi-bin/luci/admin/system/mounts
 *
 *
+* Get ACME certificates command line to run, if encountered errors during installation!
+*
 * Certificates issue:
 /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on && /etc/acme/acme.sh --home /etc/acme --issue --server letsencrypt -d $DOMAIN -w /www 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off && /usr/sbin/ipsec restart
 *
@@ -407,5 +412,7 @@ cp: can't stat 'acme.sh': No such file or directory
 /etc/acme/acme.sh --home /etc/acme --upgrade > /etc/acme/log.txt 2>&1 && /root/fw-redirect.sh Allow-http=on && /etc/acme/acme.sh --home /etc/acme --renew-all --standalone --force 2>&1 | tee -a /etc/acme/log.txt; /root/fw-redirect.sh Allow-http=off && /usr/sbin/ipsec restart
 *
 *
+* End time: Tue Apr 19 07:25:54 UTC 2022
+* Elapsed time: 0hrs 3min 52sec
 * Reboot to complete the installation? [Y/n]
 ```

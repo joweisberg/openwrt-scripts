@@ -27,7 +27,7 @@ done
 
 #echo "* uci commit firewall"
 uci commit firewall
-#echo "* restart firewall"
-fw3 -q restart
+#echo "* reload firewall"
+fw3 -q reload
 
 exit 0
